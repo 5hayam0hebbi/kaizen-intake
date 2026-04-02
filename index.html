@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kaizen RE — Client Intake</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #111;
+  --bg: #f4f1eb;
+  --card: #fdfcf9;
+  --accent: #b5322a;
+  --green: #1c4a2e;
+  --muted: #7a7368;
+  --border: #ddd9d0;
+  --highlight: #fff8e7;
+  --success-bg: #eaf4ee;
+  --success: #1a6b3a;
+  --error-bg: #fdf0ef;
+  --error: #b5322a;
+}
+
+body {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+header {
+  background: var(--ink);
+  padding: 22px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid var(--accent);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+.logo em { color: var(--accent); font-style: normal; }
+.header-pills { display: flex; gap: 8px; }
+.pill {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 1px;
+  cursor: pointer;
+  border: 1px solid #333;
+  color: #aaa;
+  background: none;
+  font-family: 'IBM Plex Mono', monospace;
+  transition: all 0.15s;
+}
+.pill:hover { border-color: #aaa; color: #fff; }
+.pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* ── Layout ── */
+.page { display: none; }
+.page.active { display: block; }
+main { max-width: 860px; margin: 0 auto; padding: 44px 24px 80px; }
+
+/* ── Page header ── */
+.page-header { margin-bottom: 36px; }
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+.page-subtitle { font-size: 11px; color: var(--muted); line-height: 1.7; }
+
+/* ── FUB Lookup bar ── */
+.lookup-bar {
+  background: var(--green);
+  border-radius: 2px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.lookup-label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #a8c4b0;
+  white-space: nowrap;
+}
+.lookup-input {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  padding: 9px 14px;
+  border: 1px solid #2e6b44;
+  background: #0e2e1a;
+  color: #fff;
+  border-radius: 2px;
+  outline: none;
+  width: 160px;
+}
+.lookup-input:focus { border-color: #5ab07a; }
+.lookup-input::placeholder { color: #4a7a5a; }
+.btn-lookup {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 9px 20px;
+  background: #5ab07a;
+  color: var(--ink);
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.btn-lookup:hover { background: #7ac896; }
+.btn-lookup:disabled { background: #2e6b44; color: #4a7a5a; cursor: not-allowed; }
+.lookup-status {
+  font-size: 11px;
+  flex: 1;
+  min-width: 200px;
+}
+.lookup-status.idle { color: #5a8a6a; }
+.lookup-status.loading { color: #ffd166; }
+.lookup-status.success { color: #7ac896; }
+.lookup-status.error { color: #ff8a7a; }
+
+/* ── Pre-filled badge ── */
+.prefilled-badge {
+  display: none;
+  background: var(--highlight);
+  border: 1px solid #f0d88a;
+  border-radius: 2px;
+  padding: 10px 16px;
+  font-size: 11px;
+  color: #7a5a10;
+  margin-bottom: 20px;
+  align-items: center;
+  gap: 8px;
+}
+.prefilled-badge.show { display: flex; }
+.prefilled-dot { width: 8px; height: 8px; background: #f0c040; border-radius: 50%; flex-shrink: 0; }
+
+/* ── Form sections ── */
+.form-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 28px;
+  margin-bottom: 16px;
+  position: relative;
+}
+.form-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--section-color, var(--green));
+}
+.form-section.contact { --section-color: var(--green); }
+.form-section.deal { --section-color: var(--accent); }
+.form-section.partner { --section-color: #7a5ab0; }
+.form-section.system { --section-color: #7a8a9a; }
+
+.section-title {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.grid { display: grid; gap: 14px; margin-bottom: 14px; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.grid-1 { grid-template-columns: 1fr; }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+label .req { color: var(--accent); margin-left: 2px; }
+
+input[type=text], input[type=email], input[type=tel], input[type=number], select, textarea {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--ink);
+  border-radius: 2px;
+  outline: none;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--green); }
+input.prefilled { background: var(--highlight); border-color: #e8c840; }
+select {
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%237a7368' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+  cursor: pointer;
+}
+textarea { resize: vertical; min-height: 72px; }
+
+/* ── Partner toggle ── */
+.partner-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 10px 0;
+  font-size: 11px;
+  color: var(--muted);
+  user-select: none;
+}
+.toggle-switch {
+  width: 36px; height: 20px;
+  background: var(--border);
+  border-radius: 10px;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggle-switch.on { background: #7a5ab0; }
+.toggle-knob {
+  width: 14px; height: 14px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px; left: 3px;
+  transition: left 0.2s;
+}
+.toggle-switch.on .toggle-knob { left: 19px; }
+.partner-fields { display: none; }
+.partner-fields.show { display: block; }
+
+/* ── Action bar ── */
+.action-bar {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 20px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.action-left { display: flex; gap: 10px; align-items: center; }
+.btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 11px 24px;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: #8f261f; }
+.btn-primary:disabled { background: var(--muted); cursor: not-allowed; }
+.btn-outline { background: transparent; color: var(--ink); border: 1px solid var(--border); }
+.btn-outline:hover { background: var(--border); }
+.btn-sync { background: var(--green); color: white; }
+.btn-sync:hover { background: #112d1c; }
+.btn-sync:disabled { background: var(--muted); cursor: not-allowed; }
+
+/* ── Response toast ── */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  padding: 14px 20px;
+  border-radius: 2px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: all 0.25s ease;
+  pointer-events: none;
+  z-index: 999;
+  max-width: 380px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: var(--success-bg); color: var(--success); border: 1px solid #b0d8be; }
+.toast.error { background: var(--error-bg); color: var(--error); border: 1px solid #f0c4c0; }
+.toast-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.toast.success .toast-dot { background: var(--success); }
+.toast.error .toast-dot { background: var(--error); }
+
+/* ── Notion ID display ── */
+.notion-id-bar {
+  display: none;
+  background: #f0f4f8;
+  border: 1px solid #c8d8e8;
+  border-radius: 2px;
+  padding: 12px 16px;
+  font-size: 11px;
+  color: #2a4a6a;
+  margin-top: 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.notion-id-bar.show { display: flex; }
+.notion-id-text { flex: 1; word-break: break-all; }
+
+/* ── Settings page ── */
+.settings-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 28px;
+  margin-bottom: 16px;
+}
+.settings-section-title {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.settings-row { margin-bottom: 14px; }
+.settings-row:last-child { margin-bottom: 0; }
+.save-indicator {
+  font-size: 10px;
+  color: var(--success);
+  margin-left: 8px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.save-indicator.show { opacity: 1; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  header { padding: 16px 20px; }
+  main { padding: 28px 16px; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .lookup-bar { gap: 10px; }
+  .lookup-input { width: 100%; }
+  .action-bar { flex-direction: column; align-items: stretch; }
+  .action-left { flex-direction: column; }
+  .btn { text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Kaizen <em>RE</em></div>
+  <div class="header-pills">
+    <button class="pill active" onclick="showPage('buyer')">Buyer Intake</button>
+    <button class="pill" onclick="showPage('seller')">Seller Intake</button>
+    <button class="pill" onclick="showPage('settings')">⚙ Webhooks</button>
+  </div>
+</header>
+
+<!-- ══════════ BUYER PAGE ══════════ -->
+<!-- ══════════ BUYER PAGE ══════════ -->
+<div class="page active" id="page-buyer">
+<main>
+  <div class="page-header">
+    <div class="page-title">Buyer Intake Form</div>
+    <div class="page-subtitle">Enter a FUB ID to auto-populate from an existing contact, or fill in manually. Submit to create or update the Notion record, then sync back to FUB.</div>
+  </div>
+
+  <div class="lookup-bar">
+    <span class="lookup-label">FUB ID Lookup</span>
+    <input type="number" class="lookup-input" id="b-fub-lookup" placeholder="e.g. 2149" />
+    <button class="btn-lookup" id="b-lookup-btn" onclick="lookupFUB('buyer')">Auto-Populate</button>
+    <span class="lookup-status idle" id="b-lookup-status">Enter a FUB Person ID to pre-fill the form</span>
+  </div>
+
+  <div class="prefilled-badge" id="b-prefilled-badge">
+    <div class="prefilled-dot"></div>
+    <span id="b-prefilled-text">Form pre-filled from FUB — review and edit before submitting</span>
+  </div>
+
+  <!-- 1. Contact Info -->
+  <div class="form-section contact">
+    <div class="section-title">1 — Contact Information</div>
+    <div class="grid grid-2">
+      <div class="field"><label>Buyer Full Name <span class="req">*</span></label><input type="text" id="b-name" placeholder="Alex Chen" /></div>
+      <div class="field"><label>Email <span class="req">*</span></label><input type="email" id="b-email" placeholder="alex@email.com" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Mobile <span class="req">*</span></label><input type="tel" id="b-phone" placeholder="416-555-0100" /></div>
+      <div class="field"><label>Preferred Contact Method</label>
+        <select id="b-channel">
+          <option value="">— Select —</option>
+          <option>WhatsApp</option><option>Phone</option><option>Email</option><option>Text</option>
+        </select>
+      </div>
+      <div class="field"><label>Lead Source</label><input type="text" id="b-source" placeholder="Referral, Realtor.ca…" /></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="field"><label>Current Home Address</label><input type="text" id="b-current-address" placeholder="123 Main St, Toronto" /></div>
+      <div class="field"><label>Who else is part of decisions?</label><input type="text" id="b-decision-makers" placeholder="Names / roles" /></div>
+    </div>
+  </div>
+
+  <!-- 2. Partner / Co-Buyer -->
+  <div class="form-section partner">
+    <div class="section-title">2 — Partner / Co-Buyer</div>
+    <div class="partner-toggle" onclick="togglePartner('buyer')">
+      <div class="toggle-switch" id="b-partner-toggle"><div class="toggle-knob"></div></div>
+      <span id="b-partner-toggle-label">Include partner / co-buyer</span>
+    </div>
+    <div class="partner-fields" id="b-partner-fields">
+      <div class="grid grid-3" style="margin-top:14px;">
+        <div class="field"><label>Partner Name</label><input type="text" id="b-partner-name" placeholder="Jamie Chen" /></div>
+        <div class="field"><label>Partner Email</label><input type="email" id="b-partner-email" placeholder="jamie@email.com" /></div>
+        <div class="field"><label>Partner Mobile</label><input type="tel" id="b-partner-phone" placeholder="416-555-0101" /></div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Partner DISC Profile</label>
+          <select id="b-partner-disc">
+            <option value="">— Select —</option>
+            <option>Straight to the point (D)</option>
+            <option>Social &amp; Outgoing (I)</option>
+            <option>Steady &amp; Dependable (S)</option>
+            <option>Caution &amp; Perfectly Accurate (C)</option>
+          </select>
+        </div>
+        <div class="field"><label>Partner FUB Person ID</label><input type="text" id="b-partner-fub-id" placeholder="auto-filled from FUB" /></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Background -->
+  <div class="form-section" style="--section-color:#7a5ab0;">
+    <div class="section-title">3 — Background</div>
+    <div class="grid grid-2">
+      <div class="field"><label>Buyer DISC Profile</label>
+        <select id="b-disc">
+          <option value="">— Select —</option>
+          <option>Straight to the point (D)</option>
+          <option>Social &amp; Outgoing (I)</option>
+          <option>Steady &amp; Dependable (S)</option>
+          <option>Caution &amp; Perfectly Accurate (C)</option>
+        </select>
+      </div>
+      <div class="field"><label>What's prompting the move? <span class="req">*</span></label><input type="text" id="b-motivation" placeholder="Upsizing, relocating, investment…" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Do you have a property to sell?</label>
+        <select id="b-sell-first">
+          <option value="">— Select —</option>
+          <option value="Buy First">Buy First</option>
+          <option value="Sell First">Sell First</option>
+          <option value="Currently Renting">Currently Renting</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+      <div class="field"><label>If renting — lease end / monthly rent</label><input type="text" id="b-lease" placeholder="June 2026 / $2,400/mo" /></div>
+      <div class="field"><label>First-Time Home Buyer?</label>
+        <select id="b-first-time">
+          <option value="">— Select —</option>
+          <option>Yes</option><option>No</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid grid-1">
+      <div class="field"><label>Top 3 outcomes for a 5-star experience</label><textarea id="b-outcomes" placeholder="What would make this a perfect experience for you?" style="min-height:56px;"></textarea></div>
+    </div>
+    <div class="grid grid-1">
+      <div class="field"><label>Biggest concern about the buying process?</label><textarea id="b-concerns" placeholder="e.g. overbidding, financing, finding the right place…" style="min-height:56px;"></textarea></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="field"><label>What do you like about your current home?</label><textarea id="b-home-likes" placeholder="" style="min-height:56px;"></textarea></div>
+      <div class="field"><label>What do you dislike about your current home?</label><textarea id="b-home-dislikes" placeholder="" style="min-height:56px;"></textarea></div>
+    </div>
+    <div class="grid grid-1">
+      <div class="field"><label>What is most important to you during the home search?</label><textarea id="b-most-important" placeholder="" style="min-height:56px;"></textarea></div>
+    </div>
+  </div>
+
+  <!-- 4. Timeline & Finance -->
+  <div class="form-section deal">
+    <div class="section-title">4 — Timeline &amp; Finance</div>
+    <div class="grid grid-3">
+      <div class="field"><label>Pre-Approval Status</label>
+        <select id="b-preapproval">
+          <option value="">— Select —</option>
+          <option>Not Started</option><option>In Process</option><option>Approved</option>
+        </select>
+      </div>
+      <div class="field"><label>Mortgage or Cash?</label><input type="text" id="b-mortgage" placeholder="Mortgage / Cash / TBD" /></div>
+      <div class="field"><label>Comfortable Price Range <span class="req">*</span></label><input type="text" id="b-budget" placeholder="$1.2M–$1.5M" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Target Monthly Payment</label><input type="text" id="b-target-payment" placeholder="$4,500/mo" /></div>
+      <div class="field"><label>Down Payment Amount (approx.)</label><input type="text" id="b-down-payment" placeholder="$200,000" /></div>
+      <div class="field"><label>Source of Down Payment</label><input type="text" id="b-down-source" placeholder="Savings, gift, RRSP…" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Ideal Move-In Date</label><input type="date" id="b-move-in" /></div>
+      <div class="field"><label>Must-Move-By Date</label><input type="date" id="b-must-move" /></div>
+      <div class="field"><label>Timing Flexibility (months)</label><input type="text" id="b-timing-flex" placeholder="e.g. 2–3 months" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Deposit Amount</label><input type="text" id="b-deposit" placeholder="$50,000" /></div>
+      <div class="field"><label>Deposit Timing</label><input type="text" id="b-deposit-timing" placeholder="Within 24hrs of acceptance" /></div>
+      <div class="field"><label>Lawyer (if known)</label><input type="text" id="b-lawyer" placeholder="Name / firm" /></div>
+    </div>
+  </div>
+
+  <!-- 5. Property Preferences -->
+  <div class="form-section" style="--section-color:#1c4a2e;">
+    <div class="section-title">5 — Property Preferences</div>
+    <div class="grid grid-3">
+      <div class="field"><label>Property Types <span class="req">*</span></label><input type="text" id="b-prop-types" placeholder="Detached; Semi; Condo…" /></div>
+      <div class="field"><label>Beds (min)</label><input type="text" id="b-beds" placeholder="3" /></div>
+      <div class="field"><label>Baths (min)</label><input type="text" id="b-baths" placeholder="2" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Preferred Sqft</label><input type="text" id="b-sqft" placeholder="1,500–2,000" /></div>
+      <div class="field"><label>Parking / Garage</label><input type="text" id="b-parking" placeholder="2-car garage preferred" /></div>
+      <div class="field"><label>Style &amp; Layout Preferences</label><input type="text" id="b-style" placeholder="Open concept, modern…" /></div>
+    </div>
+    <div class="grid grid-1">
+      <div class="field"><label>Must-Haves (non-negotiable)</label><textarea id="b-must-haves" placeholder="Separate entrance, main floor laundry…" style="min-height:56px;"></textarea></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="field"><label>Nice-to-Haves</label><textarea id="b-nice-haves" placeholder="Pool, finished basement…" style="min-height:56px;"></textarea></div>
+      <div class="field"><label>Deal-Breakers</label><textarea id="b-deal-breakers" placeholder="Busy road, no yard…" style="min-height:56px;"></textarea></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="field"><label>Outdoor Needs</label><input type="text" id="b-outdoor" placeholder="Large yard, balcony, patio…" /></div>
+      <div class="field"><label>Priority Neighborhoods</label><input type="text" id="b-neighborhoods" placeholder="Unionville; Old Markham; Cornell…" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Commute Anchors</label><input type="text" id="b-commute" placeholder="Downtown, GO Milliken, 407…" /></div>
+      <div class="field"><label>Commute Time Limit (min)</label><input type="text" id="b-commute-time" placeholder="45" /></div>
+      <div class="field"><label>Walkability / Transit Needs</label><input type="text" id="b-walkability" placeholder="" /></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="field"><label>School Preferences / Programs</label><input type="text" id="b-schools" placeholder="French immersion, IB, specific school…" /></div>
+      <div class="field"><label>Accessibility Needs</label><input type="text" id="b-accessibility" placeholder="Main floor bed/bath, no stairs…" /></div>
+    </div>
+    <div class="grid grid-3" style="margin-top:4px;padding-top:14px;border-top:1px solid var(--border);">
+      <div class="field"><label>Condo: Max Fees ($/mo)</label><input type="text" id="b-condo-fees" placeholder="$600/mo" /></div>
+      <div class="field"><label>Condo: Amenities</label><input type="text" id="b-condo-amenities" placeholder="Gym, concierge…" /></div>
+      <div class="field"><label>Condo: Pet Rules</label><input type="text" id="b-condo-pets" placeholder="Dogs allowed, max 2…" /></div>
+    </div>
+  </div>
+
+  <!-- 6. Lifestyle & Consultation -->
+  <div class="form-section" style="--section-color:#7a6a1a;">
+    <div class="section-title">6 — Lifestyle &amp; Showing Preferences</div>
+    <div class="grid grid-3">
+      <div class="field"><label>Best Days/Times for Showings</label><input type="text" id="b-showings" placeholder="Weekday evenings, Sat mornings…" /></div>
+      <div class="field"><label>Tour Pace</label>
+        <select id="b-tour-pace">
+          <option value="">— Select —</option>
+          <option>Few select homes</option>
+          <option>Broader scan</option>
+        </select>
+      </div>
+      <div class="field"><label>Tour Style</label>
+        <select id="b-tour-style">
+          <option value="">— Select —</option>
+          <option>Only Private tours</option>
+          <option>Open houses OK</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Update Frequency</label><input type="text" id="b-update-freq" placeholder="Daily texts + weekly call…" /></div>
+      <div class="field"><label>Quiet Hours / Do-Not-Disturb</label><input type="text" id="b-quiet-hours" placeholder="After 9pm, before 8am…" /></div>
+      <div class="field"><label>Multiple Offer Comfort</label>
+        <select id="b-multi-offer">
+          <option value="">— Select —</option>
+          <option value="1">1 — Not comfortable</option>
+          <option value="2">2</option>
+          <option value="3">3 — Neutral</option>
+          <option value="4">4</option>
+          <option value="5">5 — Very comfortable</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid grid-2">
+      <div class="field"><label>Comfort with Conditions</label><input type="text" id="b-conditions" placeholder="Financing, inspection, status cert…" /></div>
+      <div class="field"><label>Introductions Needed</label><input type="text" id="b-introductions" placeholder="Mortgage broker; inspector; lawyer…" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Allergies / Sensitivities</label><input type="text" id="b-allergies" placeholder="Smoke, pets…" /></div>
+      <div class="field"><label>Pets &amp; Yard Needs</label><input type="text" id="b-pets" placeholder="2 dogs, need large yard…" /></div>
+      <div class="field"><label>Kids / Pet Names</label><input type="text" id="b-kids-pets" placeholder="Liam (8), Mochi the dog…" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Dietary Restrictions</label><input type="text" id="b-dietary" placeholder="Gluten-free, vegetarian…" /></div>
+      <div class="field"><label>Favourite Coffee / Snack</label><input type="text" id="b-coffee" placeholder="Oat latte, dark chocolate…" /></div>
+      <div class="field"><label>Upcoming Celebrations</label><input type="text" id="b-celebrations" placeholder="Anniversary in July…" /></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="field"><label>Interested in VIP Perks?</label>
+        <select id="b-vip">
+          <option value="">— Select —</option>
+          <option>Yes</option><option>No</option>
+        </select>
+      </div>
+      <div class="field"><label>Household / Decision Makers</label><input type="text" id="b-household" placeholder="Couple + in-laws involved…" /></div>
+    </div>
+  </div>
+
+  <!-- 7. Consents & System -->
+  <div class="form-section system">
+    <div class="section-title">7 — Consents &amp; System</div>
+    <div class="grid grid-3">
+      <div class="field"><label>OK to Request Google Review?</label>
+        <select id="b-google-review">
+          <option value="">— Select —</option>
+          <option>Yes</option><option>No</option>
+        </select>
+      </div>
+      <div class="field"><label>OK to Share Closing Photo?</label>
+        <select id="b-share-photo">
+          <option value="">— Select —</option>
+          <option>Yes</option><option>No</option>
+        </select>
+      </div>
+      <div class="field"><label>Consent to Electronic Communication</label>
+        <select id="b-consent">
+          <option value="">— Select —</option>
+          <option>Yes</option><option>No</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid grid-1">
+      <div class="field"><label>Notes</label><textarea id="b-notes" placeholder="Any additional context…"></textarea></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="field"><label>FUB Person ID</label><input type="text" id="b-fub-id" placeholder="auto-filled" readonly style="color:var(--muted);cursor:not-allowed;" /></div>
+      <div class="field"><label>Intake Source</label><input type="text" id="b-intake-source" value="Manual" readonly style="color:var(--muted);cursor:not-allowed;" /></div>
+    </div>
+    <div class="notion-id-bar" id="b-notion-id-bar">
+      <span class="notion-id-text" id="b-notion-id-text"></span>
+    </div>
+  </div>
+
+  <div class="action-bar">
+    <div class="action-left">
+      <button class="btn btn-primary" id="b-submit-btn" onclick="submitIntake('buyer')">Save to Notion</button>
+      <button class="btn btn-sync" id="b-sync-btn" onclick="syncToFUB('buyer')" disabled>Sync → FUB</button>
+    </div>
+    <button class="btn btn-outline" onclick="resetForm('buyer')">Clear Form</button>
+  </div>
+</main>
+</div>
+
+<!-- ══════════ SELLER PAGE ══════════ -->
+<div class="page" id="page-seller">
+<main>
+  <div class="page-header">
+    <div class="page-title">Seller Intake Form</div>
+    <div class="page-subtitle">Enter a FUB ID to auto-populate from an existing contact, or fill in manually. Submit to create or update the Notion record, then sync back to FUB.</div>
+  </div>
+
+  <div class="lookup-bar">
+    <span class="lookup-label">FUB ID Lookup</span>
+    <input type="number" class="lookup-input" id="s-fub-lookup" placeholder="e.g. 2277" />
+    <button class="btn-lookup" id="s-lookup-btn" onclick="lookupFUB('seller')">Auto-Populate</button>
+    <span class="lookup-status idle" id="s-lookup-status">Enter a FUB Client ID to pre-fill the form</span>
+  </div>
+
+  <div class="prefilled-badge" id="s-prefilled-badge">
+    <div class="prefilled-dot"></div>
+    <span id="s-prefilled-text">Form pre-filled from FUB — review and edit before submitting</span>
+  </div>
+
+  <!-- 1. Contact Info -->
+  <div class="form-section contact">
+    <div class="section-title">1 — Contact Information</div>
+    <div class="grid grid-3">
+      <div class="field"><label>Seller 1 Full Name <span class="req">*</span></label><input type="text" id="s-name" placeholder="Charis Yeung" /></div>
+      <div class="field"><label>Seller 1 Email <span class="req">*</span></label><input type="email" id="s-email" placeholder="charis@email.com" /></div>
+      <div class="field"><label>Seller 1 Mobile <span class="req">*</span></label><input type="tel" id="s-phone" placeholder="416-555-0200" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Seller 2 Full Name</label><input type="text" id="s-partner-name" placeholder="Ernest Yeung" /></div>
+      <div class="field"><label>Seller 2 Email</label><input type="email" id="s-partner-email" placeholder="ernest@email.com" /></div>
+      <div class="field"><label>Seller 2 Mobile</label><input type="tel" id="s-partner-phone" placeholder="416-555-0201" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Preferred Contact Method</label>
+        <select id="s-channel">
+          <option value="">— Select —</option>
+          <option>WhatsApp</option><option>Phone</option><option>Email</option><option>Text</option>
+        </select>
+      </div>
+      <div class="field"><label>Best Way / Time to Reach</label><input type="text" id="s-best-time" placeholder="Evenings after 6pm…" /></div>
+      <div class="field"><label>Lead Source</label><input type="text" id="s-source" placeholder="Referral, door-knock…" /></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="field"><label>Who else is part of decisions?</label><input type="text" id="s-decision-makers" placeholder="Names / roles" /></div>
+      <div class="field"><label>Partner FUB Client ID</label><input type="text" id="s-partner-fub-id" placeholder="auto-filled from FUB" /></div>
+    </div>
+  </div>
+
+  <!-- 2. Property Info -->
+  <div class="form-section deal">
+    <div class="section-title">2 — Property Information</div>
+    <div class="grid grid-1">
+      <div class="field"><label>Property Address <span class="req">*</span></label><input type="text" id="s-address" placeholder="16 Milne Lane, Markham, ON L3R 2B4" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Home Structure <span class="req">*</span></label>
+        <select id="s-structure">
+          <option value="">— Select —</option>
+          <option>Detached</option><option>Semi-Detached</option><option>Townhouse</option>
+          <option>Condo Apt</option><option>Condo Town</option><option>Link</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Home Type <span class="req">*</span></label>
+        <select id="s-home-type">
+          <option value="">— Select —</option>
+          <option>2-Storey</option><option>Bungalow</option><option>Bungaloft</option>
+          <option>Backsplit</option><option>Sidesplit</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Approx. Total Sqft</label><input type="text" id="s-sqft" placeholder="2,200" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Bedrooms</label><input type="text" id="s-beds" placeholder="4" /></div>
+      <div class="field"><label>Bathrooms</label><input type="text" id="s-baths" placeholder="3" /></div>
+      <div class="field"><label>Year Built (approx.)</label><input type="text" id="s-year" placeholder="2005" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Ceiling Height (ft)</label><input type="text" id="s-ceiling" placeholder="9" /></div>
+      <div class="field"><label>Basement</label>
+        <select id="s-basement">
+          <option value="">— Select —</option>
+          <option>Finished</option><option>Partially Finished</option>
+          <option>Unfinished</option><option>Walk-Out</option><option>None</option>
+        </select>
+      </div>
+      <div class="field"><label>Garage Type / Capacity</label><input type="text" id="s-garage" placeholder="2-car attached" /></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="field"><label>Driveway Type / Parking Spaces</label><input type="text" id="s-driveway" placeholder="Interlock, 4 cars" /></div>
+      <div class="field"><label>Backyard Features</label><input type="text" id="s-backyard" placeholder="Deck, inground pool, gas BBQ…" /></div>
+    </div>
+  </div>
+
+  <!-- 3. Features & Condition -->
+  <div class="form-section" style="--section-color:#7a5ab0;">
+    <div class="section-title">3 — Features, Upgrades &amp; Condition</div>
+    <div class="grid grid-2">
+      <div class="field"><label>Key Features to Highlight</label><textarea id="s-features" placeholder="Renovated kitchen, smart home, heated floors…" style="min-height:56px;"></textarea></div>
+      <div class="field"><label>Recent Major Upgrades (with receipts?)</label><textarea id="s-upgrades" placeholder="Kitchen 2022 ($45K), Roof 2021…" style="min-height:56px;"></textarea></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Age of Major Systems (roof/HVAC/windows)</label><input type="text" id="s-systems" placeholder="Roof 5yr, HVAC 3yr, windows 2yr" /></div>
+      <div class="field"><label>Type of Flooring</label><input type="text" id="s-flooring" placeholder="Hardwood main, tile baths…" /></div>
+      <div class="field"><label>Type of Windows</label>
+        <select id="s-windows">
+          <option value="">— Select —</option>
+          <option>Double</option><option>Triple</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Kitchen Details / Countertop</label><input type="text" id="s-kitchen" placeholder="Quartz counters, centre island…" /></div>
+      <div class="field"><label>Appliances Included?</label>
+        <select id="s-appliances">
+          <option value="">— Select —</option>
+          <option>Yes</option><option>No</option><option>Some</option>
+        </select>
+      </div>
+      <div class="field"><label>Attic Access / Insulation Info</label><input type="text" id="s-attic" placeholder="Pull-down stairs, R50 insulation…" /></div>
+    </div>
+    <div class="grid grid-1">
+      <div class="field"><label>Exterior Updates (roof/siding/eavestrough/landscaping/waterproofing etc.)</label><input type="text" id="s-exterior" placeholder="New eavestrough 2023, interlock 2022…" /></div>
+    </div>
+    <div class="grid grid-2" style="margin-top:4px;padding-top:14px;border-top:1px solid var(--border);">
+      <div class="field"><label>Any water leakage, flooding or foundation issues?</label>
+        <select id="s-water">
+          <option value="">— Select —</option>
+          <option>No</option><option>Yes — details in notes</option>
+        </select>
+      </div>
+      <div class="field"><label>Any plumbing, electrical or HVAC issues?</label>
+        <select id="s-plumbing">
+          <option value="">— Select —</option>
+          <option>No</option><option>Yes — details in notes</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>History of mold, pests or insurance claim?</label>
+        <select id="s-mold">
+          <option value="">— Select —</option>
+          <option>No</option><option>Yes — details in notes</option>
+        </select>
+      </div>
+      <div class="field"><label>Rental Equipment?</label>
+        <select id="s-rental-equip">
+          <option value="">— Select —</option>
+          <option>No</option><option>Yes</option>
+        </select>
+      </div>
+      <div class="field"><label>Monthly Rental Cost</label><input type="text" id="s-rental-cost" placeholder="$60/mo HWT" /></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="field"><label>Any Added Equipment (owned)</label><input type="text" id="s-added-equip" placeholder="Central vac, water softener…" /></div>
+      <div class="field"><label>Average Monthly Utilities</label><input type="text" id="s-utilities" placeholder="$350/mo" /></div>
+    </div>
+    <div class="grid grid-1">
+      <div class="field"><label>Available Docs (surveys, permits, warranties, manuals)</label><input type="text" id="s-docs" placeholder="Survey 2019, HVAC warranty, original permits…" /></div>
+    </div>
+  </div>
+
+  <!-- 4. Inclusions & Exclusions -->
+  <div class="form-section" style="--section-color:#b5322a;">
+    <div class="section-title">4 — Inclusions &amp; Exclusions</div>
+    <div class="grid grid-2">
+      <div class="field"><label>Inclusions (Chattels / Fixtures)</label><textarea id="s-inclusions" placeholder="S/S fridge, stove, B/I dishwasher, washer, dryer, all ELFs, window coverings…" style="min-height:72px;"></textarea></div>
+      <div class="field"><label>Exclusions (Chattels / Fixtures)</label><textarea id="s-exclusions" placeholder="Dining room chandelier, backyard playset…" style="min-height:72px;"></textarea></div>
+    </div>
+  </div>
+
+  <!-- 5. Showing & Prep -->
+  <div class="form-section" style="--section-color:#1c4a2e;">
+    <div class="section-title">5 — Showing &amp; Prep</div>
+    <div class="grid grid-3">
+      <div class="field"><label>Preferred Showing Schedule</label><input type="text" id="s-showing-sched" placeholder="Weekdays after 5pm, weekends anytime…" /></div>
+      <div class="field"><label>Min Notice Before Showings</label><input type="text" id="s-showing-notice" placeholder="2 hours" /></div>
+      <div class="field"><label>Showing Constraints</label><input type="text" id="s-showing-constraints" placeholder="Pets, naps, alarm code, parking notes…" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Occupancy</label>
+        <select id="s-occupancy">
+          <option value="">— Select —</option>
+          <option>Owner Occupied</option><option>Tenant Occupied</option><option>Vacant</option>
+        </select>
+      </div>
+      <div class="field"><label>Tenant Details (if applicable)</label><input type="text" id="s-tenant" placeholder="Month-to-month, $2,800/mo, 60-day notice…" /></div>
+      <div class="field"><label>Target Launch Week</label><input type="date" id="s-launch-date" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Open to Painting / Touch-Ups?</label>
+        <select id="s-painting">
+          <option value="">— Select —</option>
+          <option>Yes</option><option>No</option><option>Maybe</option>
+        </select>
+      </div>
+      <div class="field"><label>Prep Budget Range</label><input type="text" id="s-prep-budget" placeholder="$2,000–$5,000" /></div>
+      <div class="field"><label>Staging Preference</label><input type="text" id="s-staging" placeholder="Full staging, partial, occupied…" /></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="field"><label>Condo Fees (if applicable)</label><input type="text" id="s-condo-fees" placeholder="$650/mo" /></div>
+      <div class="field"><label>Condo Assessments / Status Cert Notes</label><input type="text" id="s-condo-notes" placeholder="No special assessment, cert ordered…" /></div>
+    </div>
+  </div>
+
+  <!-- 6. Sale Details -->
+  <div class="form-section deal">
+    <div class="section-title">6 — Sale Details</div>
+    <div class="grid grid-3">
+      <div class="field"><label>What's prompting the sale?</label><input type="text" id="s-motivation" placeholder="Upsizing, relocating, estate sale…" /></div>
+      <div class="field"><label>Purchase contingent on this sale?</label>
+        <select id="s-contingent">
+          <option value="">— Select —</option>
+          <option>Yes</option><option>No</option><option>Already purchased</option>
+        </select>
+      </div>
+      <div class="field"><label>Ideal Close Date</label><input type="date" id="s-close-date" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Closing Flexibility (weeks)</label><input type="text" id="s-close-flex" placeholder="±2 weeks" /></div>
+      <div class="field"><label>Update Cadence</label><input type="text" id="s-update-cadence" placeholder="Quick texts + weekly written report…" /></div>
+      <div class="field"><label>Quiet Hours</label><input type="text" id="s-quiet-hours" placeholder="After 9pm, before 8am…" /></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Fav Coffee / Snack; Pets / Kids to Consider</label><input type="text" id="s-coffee" placeholder="Oat latte, dog named Max…" /></div>
+      <div class="field"><label>Lawyer (if selected)</label><input type="text" id="s-lawyer" placeholder="Name / firm" /></div>
+      <div class="field"><label>Top 3 Outcomes for a 5-Star Experience</label><input type="text" id="s-outcomes" placeholder="" /></div>
+    </div>
+  </div>
+
+  <!-- 7. Consents & System -->
+  <div class="form-section system">
+    <div class="section-title">7 — Consents &amp; System</div>
+    <div class="grid grid-3">
+      <div class="field"><label>OK to Request Google Review Post-Close?</label>
+        <select id="s-google-review">
+          <option value="">— Select —</option>
+          <option>Yes</option><option>No</option>
+        </select>
+      </div>
+      <div class="field"><label>OK to Share Listing Milestones on Social?</label>
+        <select id="s-share-social">
+          <option value="">— Select —</option>
+          <option>Yes</option><option>No</option>
+        </select>
+      </div>
+      <div class="field"><label>Consent to Electronic Communication</label>
+        <select id="s-consent">
+          <option value="">— Select —</option>
+          <option>Yes</option><option>No</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid grid-1">
+      <div class="field"><label>Notes</label><textarea id="s-notes" placeholder="Any additional context about this seller or listing…"></textarea></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="field"><label>FUB Client ID</label><input type="text" id="s-fub-id" placeholder="auto-filled" readonly style="color:var(--muted);cursor:not-allowed;" /></div>
+      <div class="field"><label>Intake Source</label><input type="text" id="s-intake-source" value="Manual" readonly style="color:var(--muted);cursor:not-allowed;" /></div>
+    </div>
+    <div class="notion-id-bar" id="s-notion-id-bar">
+      <span class="notion-id-text" id="s-notion-id-text"></span>
+    </div>
+  </div>
+
+  <div class="action-bar">
+    <div class="action-left">
+      <button class="btn btn-primary" id="s-submit-btn" onclick="submitIntake('seller')">Save to Notion</button>
+      <button class="btn btn-sync" id="s-sync-btn" onclick="syncToFUB('seller')" disabled>Sync → FUB</button>
+    </div>
+    <button class="btn btn-outline" onclick="resetForm('seller')">Clear Form</button>
+  </div>
+</main>
+</div>
+<!-- ══════════ SETTINGS PAGE ══════════ -->
+<div class="page" id="page-settings">
+<main>
+  <div class="page-header">
+    <div class="page-title">Webhook Configuration</div>
+    <div class="page-subtitle">Paste your Make webhook URLs below. They are saved in your browser and never leave this page.</div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Make Webhook URLs</div>
+    <div class="settings-row">
+      <div class="field">
+        <label>FUB Lookup — Buyer <span class="save-indicator" id="si-fub-buyer">✓ Saved</span></label>
+        <input type="url" id="wh-fub-buyer" placeholder="https://hook.eu1.make.com/..." oninput="saveWH('fub-buyer')" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>FUB Lookup — Seller <span class="save-indicator" id="si-fub-seller">✓ Saved</span></label>
+        <input type="url" id="wh-fub-seller" placeholder="https://hook.eu1.make.com/..." oninput="saveWH('fub-seller')" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Submit Buyer → Notion <span class="save-indicator" id="si-notion-buyer">✓ Saved</span></label>
+        <input type="url" id="wh-notion-buyer" placeholder="https://hook.eu1.make.com/..." oninput="saveWH('notion-buyer')" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Submit Seller → Notion <span class="save-indicator" id="si-notion-seller">✓ Saved</span></label>
+        <input type="url" id="wh-notion-seller" placeholder="https://hook.eu1.make.com/..." oninput="saveWH('notion-seller')" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Sync Notion → FUB (Buyer) <span class="save-indicator" id="si-sync-buyer">✓ Saved</span></label>
+        <input type="url" id="wh-sync-buyer" placeholder="https://hook.eu1.make.com/..." oninput="saveWH('sync-buyer')" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Sync Notion → FUB (Seller) <span class="save-indicator" id="si-sync-seller">✓ Saved</span></label>
+        <input type="url" id="wh-sync-seller" placeholder="https://hook.eu1.make.com/..." oninput="saveWH('sync-seller')" />
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Security Settings</div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:18px;line-height:1.7;">The team PIN protects this page from unauthorized access. The auth token is sent with every Make request — add a matching filter in Make to reject requests without it.</p>
+    <div class="settings-row">
+      <div class="field">
+        <label>Team PIN (shared with all agents) <span class="save-indicator" id="si-pin">✓ Saved</span></label>
+        <input type="password" id="sec-pin" placeholder="kaizen2026" oninput="saveSecurity()" autocomplete="new-password" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Auth Token (must match your Make filter) <span class="save-indicator" id="si-token">✓ Saved</span></label>
+        <input type="text" id="sec-token" placeholder="e.g. kzn_secret_abc123" oninput="saveSecurity()" />
+      </div>
+    </div>
+    <div style="margin-top:12px;padding:12px;background:#fdf0ef;border-left:3px solid var(--accent);font-size:11px;color:#7a3028;line-height:1.7;">
+      ⚠ After changing the team PIN, share the new PIN with your agents. The PIN change takes effect on next page load. After changing the auth token, update your Make scenarios accordingly.
+    </div>
+  </div>
+
+
+    <div style="font-size:12px;color:var(--muted);line-height:2.2;">
+      <div>1. Open each scenario in Make</div>
+      <div>2. Click the <strong style="color:var(--ink)">Custom Webhook</strong> trigger module</div>
+      <div>3. Click <strong style="color:var(--ink)">Copy address to clipboard</strong></div>
+      <div>4. Paste the URL in the corresponding field above</div>
+      <div style="margin-top:12px;padding:12px;background:#f4f1eb;border-left:3px solid var(--accent);font-size:11px;">
+        ⚠ For the FUB Lookup webhooks, enable <strong style="color:var(--ink)">"Immediately return a response"</strong> on the Custom Webhook module in Make, and add a Webhook Response module at the end of the scenario. Otherwise the auto-populate won't work.
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Required Make scenarios for this page</div>
+    <div style="font-size:12px;line-height:2.4;color:var(--muted);">
+      <div><strong style="color:var(--ink)">FUB Lookup — Buyer</strong> — receives fub_person_id, fetches FUB contact, returns JSON response with contact data</div>
+      <div><strong style="color:var(--ink)">FUB Lookup — Seller</strong> — same for sellers/listings</div>
+      <div><strong style="color:var(--ink)">Submit Buyer → Notion</strong> — receives full buyer form payload, creates or updates Notion Buyers DB record, returns notionPageId</div>
+      <div><strong style="color:var(--ink)">Submit Seller → Notion</strong> — same for Listings_Sellers DB</div>
+      <div><strong style="color:var(--ink)">Sync Notion → FUB (Buyer)</strong> — receives notionPageId, reads Notion record, updates FUB contact with latest data</div>
+      <div><strong style="color:var(--ink)">Sync Notion → FUB (Seller)</strong> — same for sellers</div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-dot"></div>
+  <span id="toast-text"></span>
+</div>
+
+<script>
+// ── Auth Layer 1: PIN gate ──
+(function() {
+  const CORRECT_PIN = localStorage.getItem('kaizen-team-pin') || 'kaizen2026';
+  const authed = sessionStorage.getItem('kaizen-authed');
+  if (authed === CORRECT_PIN) return; // already authenticated this session
+
+  // Show PIN overlay
+  document.body.style.visibility = 'hidden';
+  window.addEventListener('DOMContentLoaded', function() {
+    const overlay = document.createElement('div');
+    overlay.id = 'pin-overlay';
+    overlay.style.cssText = `
+      position:fixed;inset:0;background:#0e0e0e;display:flex;
+      align-items:center;justify-content:center;z-index:9999;
+    `;
+    overlay.innerHTML = `
+      <div style="background:#f4f1eb;padding:48px;border-radius:2px;max-width:360px;width:90%;text-align:center;border-top:3px solid #b5322a;">
+        <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px;">Kaizen <span style="color:#b5322a">RE</span></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7a7368;margin-bottom:28px;letter-spacing:0.1em;text-transform:uppercase;">Team Access Required</div>
+        <input id="pin-input" type="password" placeholder="Enter team PIN"
+          style="font-family:'IBM Plex Mono',monospace;font-size:14px;padding:11px 14px;border:1px solid #ddd9d0;border-radius:2px;width:100%;margin-bottom:12px;outline:none;text-align:center;letter-spacing:0.2em;"
+          onkeydown="if(event.key==='Enter')checkPIN()" />
+        <button onclick="checkPIN()"
+          style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;padding:12px 32px;background:#b5322a;color:white;border:none;border-radius:2px;cursor:pointer;width:100%;">
+          Unlock
+        </button>
+        <div id="pin-error" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#b5322a;margin-top:10px;min-height:16px;"></div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    document.body.style.visibility = 'visible';
+    setTimeout(() => document.getElementById('pin-input').focus(), 100);
+  });
+})();
+
+function checkPIN() {
+  const CORRECT_PIN = localStorage.getItem('kaizen-team-pin') || 'kaizen2026';
+  const entered = document.getElementById('pin-input').value;
+  if (entered === CORRECT_PIN) {
+    sessionStorage.setItem('kaizen-authed', CORRECT_PIN);
+    document.getElementById('pin-overlay').remove();
+  } else {
+    document.getElementById('pin-error').textContent = 'Incorrect PIN — try again';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').focus();
+    setTimeout(() => document.getElementById('pin-error').textContent = '', 3000);
+  }
+}
+
+// ── State ──
+const state = {
+  buyer: { notionPageId: null, fubId: null, partnerOn: false },
+  seller: { notionPageId: null, fubId: null, partnerOn: false }
+};
+
+// ── Webhooks (localStorage) ──
+const whKeys = ['fub-buyer','fub-seller','notion-buyer','notion-seller','sync-buyer','sync-seller'];
+function loadWebhooks() {
+  whKeys.forEach(k => {
+    const v = localStorage.getItem('kaizen-wh-'+k);
+    const el = document.getElementById('wh-'+k);
+    if (v && el) el.value = v;
+  });
+}
+function saveWH(key) {
+  const v = document.getElementById('wh-'+key).value;
+  localStorage.setItem('kaizen-wh-'+key, v);
+  const si = document.getElementById('si-'+key);
+  if (si) { si.classList.add('show'); setTimeout(() => si.classList.remove('show'), 1500); }
+}
+function getWH(key) { return localStorage.getItem('kaizen-wh-'+key) || ''; }
+
+// ── Page switching ──
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── Partner toggle ──
+function togglePartner(type) {
+  const p = type === 'buyer' ? 'b' : 's';
+  state[type].partnerOn = !state[type].partnerOn;
+  const toggle = document.getElementById(p+'-partner-toggle');
+  const fields = document.getElementById(p+'-partner-fields');
+  const label = document.getElementById(p+'-partner-toggle-label');
+  toggle.classList.toggle('on', state[type].partnerOn);
+  fields.classList.toggle('show', state[type].partnerOn);
+  label.textContent = state[type].partnerOn ? 'Partner included' : 'Include partner / co-buyer';
+}
+
+// ── Toast ──
+let toastTimer;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  const tx = document.getElementById('toast-text');
+  t.className = 'toast show '+type;
+  tx.textContent = msg;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 4500);
+}
+
+// ── Mark fields as pre-filled ──
+function markPrefilled(ids) {
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.value) el.classList.add('prefilled');
+  });
+}
+function clearPrefilled(prefix) {
+  document.querySelectorAll(`[id^="${prefix}"]`).forEach(el => el.classList.remove('prefilled'));
+}
+
+// ── FUB Lookup ──
+async function lookupFUB(type) {
+  const p = type === 'buyer' ? 'b' : 's';
+  const fubId = document.getElementById(p+'-fub-lookup').value.trim();
+  const whKey = type === 'buyer' ? 'fub-buyer' : 'fub-seller';
+  const url = getWH(whKey);
+  const statusEl = document.getElementById(p+'-lookup-status');
+  const btn = document.getElementById(p+'-lookup-btn');
+
+  if (!fubId) { setLookupStatus(p, 'error', '⚠ Enter a FUB ID first'); return; }
+  if (!url) { setLookupStatus(p, 'error', '⚠ No webhook URL — go to ⚙ Webhooks tab'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Looking up...';
+  setLookupStatus(p, 'loading', 'Fetching from FUB...');
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fub_person_id: parseInt(fubId), record_type: type === 'buyer' ? 'Buyer' : 'Seller', auth_token: getAuthToken() })
+    });
+
+    if (!res.ok) throw new Error('Make returned ' + res.status);
+    const data = await res.json();
+
+    // Populate fields
+    clearPrefilled(p+'-');
+    if (type === 'buyer') {
+      setValue('b-name', data.name || '');
+      setValue('b-email', data.email || '');
+      setValue('b-phone', data.phone || '');
+      setValue('b-source', data.source || '');
+      setValue('b-fub-id', data.fubId || fubId);
+      setValue('b-intake-source', 'FUB');
+      if (data.assignedTo) setSelect('b-agent', data.assignedTo);
+      // Partner from spouse URL
+      if (data.partnerName || data.partnerFubId) {
+        state.buyer.partnerOn = false;
+        togglePartner('buyer');
+        setValue('b-partner-name', data.partnerName || '');
+        setValue('b-partner-email', data.partnerEmail || '');
+        setValue('b-partner-phone', data.partnerPhone || '');
+        setValue('b-partner-fub-id', data.partnerFubId || '');
+      }
+      state.buyer.fubId = data.fubId || fubId;
+      markPrefilled(['b-name','b-email','b-phone','b-source','b-agent','b-partner-name','b-partner-email','b-partner-phone','b-partner-fub-id']);
+    } else {
+      setValue('s-name', data.name || '');
+      setValue('s-email', data.email || '');
+      setValue('s-phone', data.phone || '');
+      setValue('s-source', data.source || '');
+      setValue('s-fub-id', data.fubId || fubId);
+      setValue('s-intake-source', 'FUB');
+      if (data.assignedTo) setSelect('s-agent', data.assignedTo);
+      if (data.partnerName || data.partnerFubId) {
+        state.seller.partnerOn = false;
+        togglePartner('seller');
+        setValue('s-partner-name', data.partnerName || '');
+        setValue('s-partner-email', data.partnerEmail || '');
+        setValue('s-partner-phone', data.partnerPhone || '');
+        setValue('s-partner-fub-id', data.partnerFubId || '');
+      }
+      state.seller.fubId = data.fubId || fubId;
+      markPrefilled(['s-name','s-email','s-phone','s-source','s-agent','s-partner-name','s-partner-email','s-partner-phone','s-partner-fub-id']);
+    }
+
+    setLookupStatus(p, 'success', `✓ Loaded: ${data.name || 'contact'} (FUB ID ${fubId})`);
+    document.getElementById(p+'-prefilled-badge').classList.add('show');
+    document.getElementById(p+'-prefilled-text').textContent = `Pre-filled from FUB contact: ${data.name || fubId} — review and edit before saving`;
+    showToast(`FUB contact loaded: ${data.name || fubId}`, 'success');
+
+  } catch(e) {
+    setLookupStatus(p, 'error', '✗ Lookup failed — check webhook URL and Make scenario');
+    showToast('FUB lookup failed: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Auto-Populate';
+}
+
+function setLookupStatus(p, type, msg) {
+  const el = document.getElementById(p+'-lookup-status');
+  el.className = 'lookup-status ' + type;
+  el.textContent = msg;
+}
+
+function setValue(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val;
+}
+
+function setSelect(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  for (let opt of el.options) {
+    if (opt.value.toLowerCase().includes(val.toLowerCase()) || val.toLowerCase().includes(opt.value.toLowerCase())) {
+      el.value = opt.value;
+      return;
+    }
+  }
+}
+
+// ── Submit to Notion ──
+async function submitIntake(type) {
+  const p = type === 'buyer' ? 'b' : 's';
+  const whKey = type === 'buyer' ? 'notion-buyer' : 'notion-seller';
+  const url = getWH(whKey);
+  const btn = document.getElementById(p+'-submit-btn');
+
+  if (!url) { showToast('No webhook URL configured — go to ⚙ Webhooks', 'error'); return; }
+
+  // Validate required
+  const name = document.getElementById(p+'-name').value.trim();
+  if (!name) { showToast('Name is required', 'error'); return; }
+
+  const payload = type === 'buyer' ? buildBuyerPayload() : buildSellerPayload();
+  payload.auth_token = getAuthToken();
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('Make returned ' + res.status);
+    const data = await res.json();
+
+    if (data.notionPageId) {
+      state[type].notionPageId = data.notionPageId;
+      const bar = document.getElementById(p+'-notion-id-bar');
+      const txt = document.getElementById(p+'-notion-id-text');
+      bar.classList.add('show');
+      txt.textContent = `Notion record: ${data.notionPageId} ${data.message ? '— ' + data.message : ''}`;
+      document.getElementById(p+'-sync-btn').disabled = false;
+    }
+
+    showToast(data.message || 'Record saved to Notion ✓', 'success');
+  } catch(e) {
+    showToast('Save failed: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Save to Notion';
+}
+
+function gv(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+
+function buildBuyerPayload() {
+  return {
+    record_type: 'Buyer',
+    // System
+    fubId: gv('b-fub-id'),
+    intakeSource: gv('b-intake-source'),
+    stage: 'New Client',
+    // Contact
+    name: gv('b-name'),
+    email: gv('b-email'),
+    phone: gv('b-phone'),
+    channel: gv('b-channel'),
+    source: gv('b-source'),
+    currentAddress: gv('b-current-address'),
+    decisionMakers: gv('b-decision-makers'),
+    // Partner
+    partnerName: gv('b-partner-name'),
+    partnerEmail: gv('b-partner-email'),
+    partnerPhone: gv('b-partner-phone'),
+    partnerDisc: gv('b-partner-disc'),
+    partnerFubId: gv('b-partner-fub-id'),
+    // Background
+    disc: gv('b-disc'),
+    motivation: gv('b-motivation'),
+    sellFirst: gv('b-sell-first'),
+    lease: gv('b-lease'),
+    firstTimeBuyer: gv('b-first-time'),
+    outcomes: gv('b-outcomes'),
+    concerns: gv('b-concerns'),
+    homeLikes: gv('b-home-likes'),
+    homeDislikes: gv('b-home-dislikes'),
+    mostImportant: gv('b-most-important'),
+    // Finance & Timeline
+    preApproval: gv('b-preapproval'),
+    mortgage: gv('b-mortgage'),
+    budget: gv('b-budget'),
+    targetPayment: gv('b-target-payment'),
+    downPayment: gv('b-down-payment'),
+    downSource: gv('b-down-source'),
+    moveIn: gv('b-move-in'),
+    mustMove: gv('b-must-move'),
+    timingFlex: gv('b-timing-flex'),
+    deposit: gv('b-deposit'),
+    depositTiming: gv('b-deposit-timing'),
+    lawyer: gv('b-lawyer'),
+    // Property
+    propTypes: gv('b-prop-types'),
+    beds: gv('b-beds'),
+    baths: gv('b-baths'),
+    sqft: gv('b-sqft'),
+    parking: gv('b-parking'),
+    style: gv('b-style'),
+    mustHaves: gv('b-must-haves'),
+    niceHaves: gv('b-nice-haves'),
+    dealBreakers: gv('b-deal-breakers'),
+    outdoor: gv('b-outdoor'),
+    neighborhoods: gv('b-neighborhoods'),
+    commute: gv('b-commute'),
+    commuteTime: gv('b-commute-time'),
+    walkability: gv('b-walkability'),
+    schools: gv('b-schools'),
+    accessibility: gv('b-accessibility'),
+    condoFees: gv('b-condo-fees'),
+    condoAmenities: gv('b-condo-amenities'),
+    condoPets: gv('b-condo-pets'),
+    // Lifestyle
+    showings: gv('b-showings'),
+    tourPace: gv('b-tour-pace'),
+    tourStyle: gv('b-tour-style'),
+    updateFreq: gv('b-update-freq'),
+    quietHours: gv('b-quiet-hours'),
+    multiOffer: gv('b-multi-offer'),
+    conditions: gv('b-conditions'),
+    introductions: gv('b-introductions'),
+    allergies: gv('b-allergies'),
+    pets: gv('b-pets'),
+    kidsPets: gv('b-kids-pets'),
+    dietary: gv('b-dietary'),
+    coffee: gv('b-coffee'),
+    celebrations: gv('b-celebrations'),
+    vip: gv('b-vip'),
+    household: gv('b-household'),
+    // Consents
+    googleReview: gv('b-google-review'),
+    sharePhoto: gv('b-share-photo'),
+    consent: gv('b-consent'),
+    notes: gv('b-notes')
+  };
+}
+
+function buildSellerPayload() {
+  return {
+    record_type: 'Seller',
+    // System
+    fubId: gv('s-fub-id'),
+    intakeSource: gv('s-intake-source'),
+    stage: 'New Client',
+    // Contact
+    name: gv('s-name'),
+    email: gv('s-email'),
+    phone: gv('s-phone'),
+    partnerName: gv('s-partner-name'),
+    partnerEmail: gv('s-partner-email'),
+    partnerPhone: gv('s-partner-phone'),
+    partnerFubId: gv('s-partner-fub-id'),
+    channel: gv('s-channel'),
+    bestTime: gv('s-best-time'),
+    source: gv('s-source'),
+    decisionMakers: gv('s-decision-makers'),
+    // Property Info
+    address: gv('s-address'),
+    structure: gv('s-structure'),
+    homeType: gv('s-home-type'),
+    sqft: gv('s-sqft'),
+    beds: gv('s-beds'),
+    baths: gv('s-baths'),
+    yearBuilt: gv('s-year'),
+    ceiling: gv('s-ceiling'),
+    basement: gv('s-basement'),
+    garage: gv('s-garage'),
+    driveway: gv('s-driveway'),
+    backyard: gv('s-backyard'),
+    // Features & Condition
+    features: gv('s-features'),
+    upgrades: gv('s-upgrades'),
+    systems: gv('s-systems'),
+    flooring: gv('s-flooring'),
+    windows: gv('s-windows'),
+    kitchen: gv('s-kitchen'),
+    appliances: gv('s-appliances'),
+    attic: gv('s-attic'),
+    exterior: gv('s-exterior'),
+    waterIssue: gv('s-water'),
+    plumbingIssue: gv('s-plumbing'),
+    moldHistory: gv('s-mold'),
+    rentalEquip: gv('s-rental-equip'),
+    rentalCost: gv('s-rental-cost'),
+    addedEquip: gv('s-added-equip'),
+    utilities: gv('s-utilities'),
+    docs: gv('s-docs'),
+    // Inclusions / Exclusions
+    inclusions: gv('s-inclusions'),
+    exclusions: gv('s-exclusions'),
+    // Showing & Prep
+    showingSched: gv('s-showing-sched'),
+    showingNotice: gv('s-showing-notice'),
+    showingConstraints: gv('s-showing-constraints'),
+    occupancy: gv('s-occupancy'),
+    tenant: gv('s-tenant'),
+    launchDate: gv('s-launch-date'),
+    painting: gv('s-painting'),
+    prepBudget: gv('s-prep-budget'),
+    staging: gv('s-staging'),
+    condoFees: gv('s-condo-fees'),
+    condoNotes: gv('s-condo-notes'),
+    // Sale Details
+    motivation: gv('s-motivation'),
+    contingent: gv('s-contingent'),
+    closeDate: gv('s-close-date'),
+    closeFlex: gv('s-close-flex'),
+    updateCadence: gv('s-update-cadence'),
+    quietHours: gv('s-quiet-hours'),
+    coffee: gv('s-coffee'),
+    lawyer: gv('s-lawyer'),
+    outcomes: gv('s-outcomes'),
+    // Consents
+    googleReview: gv('s-google-review'),
+    shareSocial: gv('s-share-social'),
+    consent: gv('s-consent'),
+    notes: gv('s-notes')
+  };
+}
+
+// ── Sync Notion → FUB ──
+async function syncToFUB(type) {
+  const p = type === 'buyer' ? 'b' : 's';
+  const whKey = type === 'buyer' ? 'sync-buyer' : 'sync-seller';
+  const url = getWH(whKey);
+  const btn = document.getElementById(p+'-sync-btn');
+  const notionPageId = state[type].notionPageId;
+
+  if (!url) { showToast('No sync webhook URL — go to ⚙ Webhooks', 'error'); return; }
+  if (!notionPageId) { showToast('Save to Notion first before syncing to FUB', 'error'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Syncing...';
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notionPageId, record_type: type === 'buyer' ? 'Buyer' : 'Seller', auth_token: getAuthToken() })
+    });
+    if (!res.ok) throw new Error('Make returned ' + res.status);
+    const data = await res.json();
+    showToast(data.message || 'Notion data synced to FUB ✓', 'success');
+  } catch(e) {
+    showToast('Sync failed: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Sync → FUB';
+}
+
+// ── Reset ──
+function resetForm(type) {
+  const p = type === 'buyer' ? 'b' : 's';
+  const prefix = p + '-';
+  document.querySelectorAll(`[id^="${prefix}"]`).forEach(el => {
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      if (!el.readOnly) el.value = '';
+      el.classList.remove('prefilled');
+    }
+    if (el.tagName === 'SELECT') el.selectedIndex = 0;
+  });
+  setValue(p+'-intake-source', 'Manual');
+  setValue(p+'-fub-lookup', '');
+  state[type] = { notionPageId: null, fubId: null, partnerOn: false };
+  document.getElementById(p+'-prefilled-badge').classList.remove('show');
+  document.getElementById(p+'-notion-id-bar').classList.remove('show');
+  document.getElementById(p+'-sync-btn').disabled = true;
+  document.getElementById(p+'-partner-toggle').classList.remove('on');
+  document.getElementById(p+'-partner-fields').classList.remove('show');
+  setLookupStatus(p, 'idle', 'Enter a FUB ID to pre-fill the form');
+}
+
+function getAuthToken() {
+  return localStorage.getItem('kaizen-auth-token') || '';
+}
+
+function saveSecurity() {
+  const pin = document.getElementById('sec-pin').value;
+  const token = document.getElementById('sec-token').value;
+  if (pin) {
+    localStorage.setItem('kaizen-team-pin', pin);
+    const si = document.getElementById('si-pin');
+    if (si) { si.classList.add('show'); setTimeout(() => si.classList.remove('show'), 1500); }
+  }
+  if (token) {
+    localStorage.setItem('kaizen-auth-token', token);
+    const si = document.getElementById('si-token');
+    if (si) { si.classList.add('show'); setTimeout(() => si.classList.remove('show'), 1500); }
+  }
+}
+
+function loadSecurity() {
+  const pin = localStorage.getItem('kaizen-team-pin');
+  const token = localStorage.getItem('kaizen-auth-token');
+  if (pin) document.getElementById('sec-pin').value = pin;
+  if (token) document.getElementById('sec-token').value = token;
+}
+
+// ── Init ──
+loadWebhooks();
+loadSecurity();
+</script>
+</body>
+</html>
