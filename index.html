@@ -1221,13 +1221,13 @@ async function lookupFUB(type) {
 
   try {
     const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-    'Content-Type': 'application/json',
-    'x-make-apikey': getAuthToken()
-            },
-    body: JSON.stringify({ fub_person_id: parseInt(fubId), record_type: type === 'buyer' ? 'Buyer' : 'Seller', auth_token: getAuthToken() })
-});
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-make-apikey': getAuthToken()
+      },
+      body: JSON.stringify({ fub_person_id: parseInt(fubId), record_type: type === 'buyer' ? 'Buyer' : 'Seller', auth_token: getAuthToken() })
+    });
 
     if (!res.ok) throw new Error('Make returned ' + res.status);
     const data = await res.json();
@@ -1330,7 +1330,10 @@ async function submitIntake(type) {
   try {
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-make-apikey': getAuthToken()
+      },
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error('Make returned ' + res.status);
@@ -1546,7 +1549,10 @@ async function syncToFUB(type) {
   try {
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-make-apikey': getAuthToken()
+      },
       body: JSON.stringify({ notionPageId, record_type: type === 'buyer' ? 'Buyer' : 'Seller', auth_token: getAuthToken() })
     });
     if (!res.ok) throw new Error('Make returned ' + res.status);
