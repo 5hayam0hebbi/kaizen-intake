@@ -1260,17 +1260,15 @@ async function lookupFUB(type) {
       setValue('s-source', data.source || '');
       setValue('s-fub-id', data.fubId || fubId);
       setValue('s-intake-source', 'FUB');
-      if (data.assignedTo) setSelect('s-agent', data.assignedTo);
+      // Seller tab has inline partner fields — no toggle needed
       if (data.partnerName || data.partnerFubId) {
-        state.seller.partnerOn = false;
-        togglePartner('seller');
         setValue('s-partner-name', data.partnerName || '');
         setValue('s-partner-email', data.partnerEmail || '');
         setValue('s-partner-phone', data.partnerPhone || '');
         setValue('s-partner-fub-id', data.partnerFubId || '');
       }
       state.seller.fubId = data.fubId || fubId;
-      markPrefilled(['s-name','s-email','s-phone','s-source','s-agent','s-partner-name','s-partner-email','s-partner-phone','s-partner-fub-id']);
+      markPrefilled(['s-name','s-email','s-phone','s-source','s-partner-name','s-partner-email','s-partner-phone','s-partner-fub-id']);
     }
 
     setLookupStatus(p, 'success', `✓ Loaded: ${data.name || 'contact'} (FUB ID ${fubId})`);
@@ -1583,8 +1581,10 @@ function resetForm(type) {
   document.getElementById(p+'-prefilled-badge').classList.remove('show');
   document.getElementById(p+'-notion-id-bar').classList.remove('show');
   document.getElementById(p+'-sync-btn').disabled = true;
-  document.getElementById(p+'-partner-toggle').classList.remove('on');
-  document.getElementById(p+'-partner-fields').classList.remove('show');
+  const partnerToggle = document.getElementById(p+'-partner-toggle');
+  const partnerFields = document.getElementById(p+'-partner-fields');
+  if (partnerToggle) partnerToggle.classList.remove('on');
+  if (partnerFields) partnerFields.classList.remove('show');
   setLookupStatus(p, 'idle', 'Enter a FUB ID to pre-fill the form');
 }
 
