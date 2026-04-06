@@ -1228,7 +1228,7 @@ async function doLogin() {
     if (!res.ok) throw new Error('Server error ' + res.status);
     const data = await res.json();
     if (data.success) {
-      saveSession({ username: data.username, displayName: data.displayName, fubName: data.fubName, role: data.role });
+      saveSession({ username: data.username, displayName: data.displayName, fubName: data.fubName, role: (data.role || '').toLowerCase() });
       document.getElementById('login-overlay').remove();
       initApp();
     } else {
@@ -1260,14 +1260,21 @@ function initApp() {
   if (barEl) barEl.style.display = 'flex';
   // Show admin pill only for admins
   const adminPill = document.getElementById('pill-admin');
-  if (adminPill) adminPill.style.display = session.role === 'admin' ? 'flex' : 'none';
+  if (adminPill) adminPill.style.display = (session.role || '').toLowerCase() === 'admin' ? 'flex' : 'none';
   // Pre-set assigned agent on buyer form
   if (session.fubName) setSelect('b-agent', session.fubName);
 }
 
 (function() {
   const session = getSession();
-  if (session) { window.addEventListener('DOMContentLoaded', initApp); return; }
+  if (session) {
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp(); // DOM already ready
+    }
+    return;
+  }
   document.body.style.visibility = 'hidden';
   window.addEventListener('DOMContentLoaded', function() {
     const overlay = document.createElement('div');
