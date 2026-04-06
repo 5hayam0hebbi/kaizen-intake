@@ -1267,16 +1267,27 @@ function initApp() {
         <div class="login-sub">Client Intake Portal</div>
         <div class="login-field">
           <label>Username</label>
-          <input type="text" id="login-username" placeholder="e.g. shaya" autocomplete="username"
+          <input type="text" id="login-username" autocomplete="username"
             onkeydown="if(event.key==='Enter')document.getElementById('login-password').focus()" />
         </div>
         <div class="login-field">
           <label>Password</label>
-          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"
+          <input type="password" id="login-password" autocomplete="current-password"
             onkeydown="if(event.key==='Enter')doLogin()" />
         </div>
         <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
         <div class="login-error" id="login-error"></div>
+        <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border);">
+          <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:500;">First-time setup (admin only)</div>
+          <input type="text" id="login-webhook-setup" placeholder="Paste login webhook URL"
+            style="width:100%;font-family:Inter,sans-serif;font-size:11px;padding:8px 10px;border:1px solid var(--border);background:#fff;color:var(--ink);outline:none;margin-bottom:6px;"
+            onkeydown="if(event.key===\'Enter\')saveLoginWebhook()" />
+          <button onclick="saveLoginWebhook()"
+            style="width:100%;font-family:Inter,sans-serif;font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:8px;background:transparent;color:var(--muted);border:1px solid var(--border);cursor:pointer;">
+            Save Webhook URL
+          </button>
+          <div id="login-wh-status" style="font-size:10px;color:var(--success);margin-top:6px;min-height:14px;text-align:center;"></div>
+        </div>
       </div>
     `;
     document.body.appendChild(overlay);
@@ -1284,6 +1295,28 @@ function initApp() {
     setTimeout(() => document.getElementById('login-username').focus(), 100);
   });
 })();
+
+function saveLoginWebhook() {
+  const url = document.getElementById('login-webhook-setup').value.trim();
+  if (!url) return;
+  localStorage.setItem('kaizen-wh-login', url);
+  // Also update the settings field if it exists
+  const settingsField = document.getElementById('wh-login');
+  if (settingsField) settingsField.value = url;
+  const status = document.getElementById('login-wh-status');
+  if (status) { status.textContent = '✓ Saved — now sign in'; setTimeout(() => { if(status) status.textContent=''; }, 3000); }
+  document.getElementById('login-webhook-setup').value = '';
+}
+
+// On login screen load, show if webhook already configured
+window.addEventListener('DOMContentLoaded', function() {
+  const existing = localStorage.getItem('kaizen-wh-login') || '';
+  const setupField = document.getElementById('login-webhook-setup');
+  const status = document.getElementById('login-wh-status');
+  if (existing && setupField) {
+    if (status) status.textContent = '✓ Webhook configured';
+  }
+});
 
 function checkPIN() {}
 
