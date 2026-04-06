@@ -1269,9 +1269,8 @@ async function lookupFUB(type) {
         setValue('b-partner-phone', data.partnerPhone || '');
         setValue('b-partner-fub-id', data.partnerFubId || '');
       }
-      setValue('b-current-address', data.currentAddress || '');
       state.buyer.fubId = data.fubId || fubId;
-      markPrefilled(['b-name','b-email','b-phone','b-source','b-agent','b-current-address','b-partner-name','b-partner-email','b-partner-phone','b-partner-fub-id']);
+      markPrefilled(['b-name','b-email','b-phone','b-source','b-agent','b-partner-name','b-partner-email','b-partner-phone','b-partner-fub-id']);
     } else {
       setValue('s-name', data.name || '');
       setValue('s-email', data.email || '');
@@ -1286,9 +1285,9 @@ async function lookupFUB(type) {
         setValue('s-partner-phone', data.partnerPhone || '');
         setValue('s-partner-fub-id', data.partnerFubId || '');
       }
-      setValue('s-current-address', data.currentAddress || '');
+      setValue('s-address', data.currentAddress || '');
       state.seller.fubId = data.fubId || fubId;
-      markPrefilled(['s-name','s-email','s-phone','s-source','s-current-address','s-partner-name','s-partner-email','s-partner-phone','s-partner-fub-id']);
+      markPrefilled(['s-name','s-email','s-phone','s-source','s-address','s-partner-name','s-partner-email','s-partner-phone','s-partner-fub-id']);
     }
 
     setLookupStatus(p, 'success', `✓ Loaded: ${data.name || 'contact'} (FUB ID ${fubId})`);
