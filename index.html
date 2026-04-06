@@ -1464,6 +1464,9 @@ async function lookupFUB(type) {
     if (!res.ok) throw new Error('Make returned ' + res.status);
     const data = await res.json();
 
+    // Debug: log what IN1 returned
+    console.log('[IN1 response]', JSON.stringify(data));
+
     // Handle FUB not found or access denied errors returned as 200 with error flag
     if (data.error) {
       setLookupStatus(p, 'error', '✗ ' + (data.message || 'FUB ID not found'));
