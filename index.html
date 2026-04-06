@@ -402,6 +402,63 @@ textarea { resize: vertical; min-height: 72px; }
   .action-left { flex-direction: column; }
   .btn { text-align: center; }
 }
+
+/* ── Login Overlay ── */
+#login-overlay {
+  position:fixed;inset:0;background:#0a0a0a;display:flex;
+  align-items:center;justify-content:center;z-index:9999;
+}
+.login-box {
+  background:var(--bg);padding:52px 44px;max-width:400px;width:90%;
+  border-top:3px solid var(--gold);
+}
+.login-logo {
+  font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;
+  color:var(--black);letter-spacing:0.02em;margin-bottom:4px;text-align:center;
+}
+.login-logo span { color:var(--gold); }
+.login-sub {
+  font-size:10px;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:36px;font-weight:500;text-align:center;
+}
+.login-field { margin-bottom:14px; }
+.login-field label {
+  font-size:10px;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;display:block;margin-bottom:5px;
+}
+.login-field input {
+  width:100%;font-family:'Inter',sans-serif;font-size:13px;
+  padding:10px 12px;border:1px solid var(--border);background:#fff;
+  color:var(--ink);outline:none;border-radius:0;
+}
+.login-field input:focus { border-color:var(--gold); }
+.login-btn {
+  width:100%;font-family:'Inter',sans-serif;font-size:10px;font-weight:600;
+  letter-spacing:0.14em;text-transform:uppercase;padding:13px;
+  background:var(--gold);color:var(--black);border:none;cursor:pointer;
+  margin-top:8px;transition:background 0.15s;
+}
+.login-btn:hover { background:var(--gold-light); }
+.login-btn:disabled { background:#888;color:#ccc;cursor:not-allowed; }
+.login-error {
+  font-size:11px;color:var(--error);margin-top:10px;min-height:16px;
+  text-align:center;
+}
+.header-user-bar {
+  display:none;align-items:center;gap:10px;padding:0 20px;
+  border-left:1px solid #222;
+}
+.header-user-name {
+  font-size:10px;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--gold);font-weight:500;
+}
+.header-logout {
+  font-size:9px;letter-spacing:0.1em;text-transform:uppercase;
+  color:#555;cursor:pointer;background:none;border:none;
+  font-family:'Inter',sans-serif;padding:4px 8px;transition:color 0.15s;
+}
+.header-logout:hover { color:#aaa; }
+
 </style>
 </head>
 <body>
@@ -416,7 +473,11 @@ textarea { resize: vertical; min-height: 72px; }
   <div class="header-pills">
     <button class="pill active" onclick="showPage('buyer')">Buyer Intake</button>
     <button class="pill" onclick="showPage('seller')">Seller Intake</button>
-    <button class="pill" onclick="showPage('settings')">⚙ Webhooks</button>
+    <button class="pill" id="pill-webhooks" onclick="showPage('settings')">⚙ Webhooks</button>
+  </div>
+  <div class="header-user-bar" id="header-user-bar">
+    <span class="header-user-name" id="header-user-name"></span>
+    <button class="header-logout" onclick="logout()">Sign Out</button>
   </div>
 </header>
 
@@ -1051,6 +1112,12 @@ textarea { resize: vertical; min-height: 72px; }
         <label>Sync Notion → FUB (Seller) <span class="save-indicator" id="si-sync-seller">✓ Saved</span></label>
         <input type="url" id="wh-sync-seller" placeholder="https://hook.eu1.make.com/..." oninput="saveWH('sync-seller')" />
       </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Login Webhook (IN0) <span class="save-indicator" id="si-login">✓ Saved</span></label>
+        <input type="url" id="wh-login" placeholder="https://hook.us2.make.com/..." oninput="saveWH('login')" />
+      </div>
+    </div>
     </div>
   </div>
 
@@ -1107,54 +1174,118 @@ textarea { resize: vertical; min-height: 72px; }
 </div>
 
 <script>
-// ── Auth Layer 1: PIN gate ──
-(function() {
-  const CORRECT_PIN = localStorage.getItem('kaizen-team-pin') || 'kaizen2026';
-  const authed = sessionStorage.getItem('kaizen-authed');
-  if (authed === CORRECT_PIN) return; // already authenticated this session
+// ── Auth System ──
+const SESSION_KEY = 'kaizen-session';
+const SESSION_HOURS = 8;
 
-  // Show PIN overlay
+function getSession() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+    if (!s) return null;
+    if (Date.now() > s.expires) { localStorage.removeItem(SESSION_KEY); return null; }
+    return s;
+  } catch(e) { return null; }
+}
+
+function saveSession(data) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify({
+    ...data,
+    expires: Date.now() + SESSION_HOURS * 60 * 60 * 1000
+  }));
+}
+
+function logout() {
+  localStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  if (!username || !password) { errEl.textContent = 'Enter username and password'; return; }
+  const whUrl = localStorage.getItem('kaizen-wh-login') || '';
+  if (!whUrl) { errEl.textContent = 'Login webhook not configured — contact admin'; return; }
+  btn.disabled = true; btn.textContent = 'Verifying...'; errEl.textContent = '';
+  try {
+    const hash = await sha256(password);
+    const res = await fetch(whUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, passwordHash: hash })
+    });
+    if (!res.ok) throw new Error('Server error ' + res.status);
+    const data = await res.json();
+    if (data.success) {
+      saveSession({ username: data.username, displayName: data.displayName, fubName: data.fubName, role: data.role });
+      document.getElementById('login-overlay').remove();
+      initApp();
+    } else {
+      errEl.textContent = data.message || 'Invalid username or password';
+      document.getElementById('login-password').value = '';
+      document.getElementById('login-password').focus();
+    }
+  } catch(e) { errEl.textContent = 'Login failed: ' + e.message; }
+  btn.disabled = false; btn.textContent = 'Sign In';
+}
+
+function initApp() {
+  const session = getSession();
+  if (!session) return;
+  // Show user name in header
+  const nameEl = document.getElementById('header-user-name');
+  const barEl = document.getElementById('header-user-bar');
+  if (nameEl) nameEl.textContent = session.displayName;
+  if (barEl) barEl.style.display = 'flex';
+  // Hide webhooks pill from non-admins
+  if (session.role !== 'admin') {
+    const pill = document.getElementById('pill-webhooks');
+    if (pill) pill.style.display = 'none';
+  }
+  // Pre-set assigned agent on buyer form
+  if (session.fubName) setSelect('b-agent', session.fubName);
+}
+
+(function() {
+  const session = getSession();
+  if (session) { window.addEventListener('DOMContentLoaded', initApp); return; }
   document.body.style.visibility = 'hidden';
   window.addEventListener('DOMContentLoaded', function() {
     const overlay = document.createElement('div');
-    overlay.id = 'pin-overlay';
-    overlay.style.cssText = `
-      position:fixed;inset:0;background:#0e0e0e;display:flex;
-      align-items:center;justify-content:center;z-index:9999;
-    `;
+    overlay.id = 'login-overlay';
     overlay.innerHTML = `
-      <div style="background:#f4f1eb;padding:48px;border-radius:2px;max-width:360px;width:90%;text-align:center;border-top:3px solid #b5322a;">
-        <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px;">Kaizen <span style="color:#b5322a">RE</span></div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7a7368;margin-bottom:28px;letter-spacing:0.1em;text-transform:uppercase;">Team Access Required</div>
-        <input id="pin-input" type="password" placeholder="Enter team PIN"
-          style="font-family:'IBM Plex Mono',monospace;font-size:14px;padding:11px 14px;border:1px solid #ddd9d0;border-radius:2px;width:100%;margin-bottom:12px;outline:none;text-align:center;letter-spacing:0.2em;"
-          onkeydown="if(event.key==='Enter')checkPIN()" />
-        <button onclick="checkPIN()"
-          style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;padding:12px 32px;background:#b5322a;color:white;border:none;border-radius:2px;cursor:pointer;width:100%;">
-          Unlock
-        </button>
-        <div id="pin-error" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#b5322a;margin-top:10px;min-height:16px;"></div>
+      <div class="login-box">
+        <div class="login-logo"><span>Kaizen</span> RE</div>
+        <div class="login-sub">Client Intake Portal</div>
+        <div class="login-field">
+          <label>Username</label>
+          <input type="text" id="login-username" placeholder="e.g. shaya" autocomplete="username"
+            onkeydown="if(event.key==='Enter')document.getElementById('login-password').focus()" />
+        </div>
+        <div class="login-field">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"
+            onkeydown="if(event.key==='Enter')doLogin()" />
+        </div>
+        <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
+        <div class="login-error" id="login-error"></div>
       </div>
     `;
     document.body.appendChild(overlay);
     document.body.style.visibility = 'visible';
-    setTimeout(() => document.getElementById('pin-input').focus(), 100);
+    setTimeout(() => document.getElementById('login-username').focus(), 100);
   });
 })();
 
-function checkPIN() {
-  const CORRECT_PIN = localStorage.getItem('kaizen-team-pin') || 'kaizen2026';
-  const entered = document.getElementById('pin-input').value;
-  if (entered === CORRECT_PIN) {
-    sessionStorage.setItem('kaizen-authed', CORRECT_PIN);
-    document.getElementById('pin-overlay').remove();
-  } else {
-    document.getElementById('pin-error').textContent = 'Incorrect PIN — try again';
-    document.getElementById('pin-input').value = '';
-    document.getElementById('pin-input').focus();
-    setTimeout(() => document.getElementById('pin-error').textContent = '', 3000);
-  }
-}
+function checkPIN() {}
 
 // ── State ──
 const state = {
@@ -1163,7 +1294,7 @@ const state = {
 };
 
 // ── Webhooks (localStorage) ──
-const whKeys = ['fub-buyer','fub-seller','notion-buyer','notion-seller','sync-buyer','sync-seller'];
+const whKeys = ['fub-buyer','fub-seller','notion-buyer','notion-seller','sync-buyer','sync-seller','login'];
 function loadWebhooks() {
   whKeys.forEach(k => {
     const v = localStorage.getItem('kaizen-wh-'+k);
@@ -1244,7 +1375,7 @@ async function lookupFUB(type) {
         'Content-Type': 'application/json',
         'x-make-apikey': getAuthToken()
       },
-      body: JSON.stringify({ fub_person_id: parseInt(fubId), record_type: type === 'buyer' ? 'Buyer' : 'Seller', auth_token: getAuthToken() })
+      body: JSON.stringify({ fub_person_id: parseInt(fubId), record_type: type === 'buyer' ? 'Buyer' : 'Seller', auth_token: getAuthToken(), assignedTo: (getSession() || {}).fubName || '' })
     });
 
     if (!res.ok) throw new Error('Make returned ' + res.status);
@@ -1269,9 +1400,8 @@ async function lookupFUB(type) {
         setValue('b-partner-phone', data.partnerPhone || '');
         setValue('b-partner-fub-id', data.partnerFubId || '');
       }
-      setValue('b-current-address', data.currentAddress || '');
       state.buyer.fubId = data.fubId || fubId;
-      markPrefilled(['b-name','b-email','b-phone','b-source','b-agent','b-current-address','b-partner-name','b-partner-email','b-partner-phone','b-partner-fub-id']);
+      markPrefilled(['b-name','b-email','b-phone','b-source','b-agent','b-partner-name','b-partner-email','b-partner-phone','b-partner-fub-id']);
     } else {
       setValue('s-name', data.name || '');
       setValue('s-email', data.email || '');
@@ -1286,9 +1416,8 @@ async function lookupFUB(type) {
         setValue('s-partner-phone', data.partnerPhone || '');
         setValue('s-partner-fub-id', data.partnerFubId || '');
       }
-      setValue('s-address', data.currentAddress || '');
       state.seller.fubId = data.fubId || fubId;
-      markPrefilled(['s-name','s-email','s-phone','s-source','s-address','s-partner-name','s-partner-email','s-partner-phone','s-partner-fub-id']);
+      markPrefilled(['s-name','s-email','s-phone','s-source','s-partner-name','s-partner-email','s-partner-phone','s-partner-fub-id']);
     }
 
     setLookupStatus(p, 'success', `✓ Loaded: ${data.name || 'contact'} (FUB ID ${fubId})`);
@@ -1341,6 +1470,9 @@ async function submitIntake(type) {
   if (!name) { showToast('Name is required', 'error'); return; }
 
   const payload = type === 'buyer' ? buildBuyerPayload() : buildSellerPayload();
+  // Auto-set assigned agent from session
+  const _sess = getSession();
+  if (_sess && _sess.fubName) payload.assignedAgent = _sess.fubName;
   payload.auth_token = getAuthToken();
   btn.disabled = true;
   btn.textContent = 'Saving...';
