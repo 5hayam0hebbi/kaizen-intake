@@ -1258,12 +1258,9 @@ function initApp() {
   const barEl = document.getElementById('header-user-bar');
   if (nameEl) nameEl.textContent = session.displayName;
   if (barEl) barEl.style.display = 'flex';
-  // Hide webhooks pill from non-admins
-  if (session.role !== 'admin') {
-    // Show admin pill only for admins
-    const adminPill = document.getElementById('pill-admin');
-    if (adminPill && session.role === 'admin') adminPill.style.display = 'flex';
-  }
+  // Show admin pill only for admins
+  const adminPill = document.getElementById('pill-admin');
+  if (adminPill) adminPill.style.display = session.role === 'admin' ? 'flex' : 'none';
   // Pre-set assigned agent on buyer form
   if (session.fubName) setSelect('b-agent', session.fubName);
 }
