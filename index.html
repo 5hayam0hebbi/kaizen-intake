@@ -1219,7 +1219,10 @@ async function doLogin() {
     const hash = await sha256(password);
     const res = await fetch(whUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-make-apikey': localStorage.getItem('kaizen-auth-token') || ''
+      },
       body: JSON.stringify({ username, passwordHash: hash })
     });
     if (!res.ok) throw new Error('Server error ' + res.status);
@@ -1279,12 +1282,15 @@ function initApp() {
         <div class="login-error" id="login-error"></div>
         <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border);">
           <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:500;">First-time setup (admin only)</div>
-          <input type="text" id="login-webhook-setup" placeholder="Paste login webhook URL"
+          <input type="text" id="login-webhook-setup" placeholder="Login webhook URL"
+            style="width:100%;font-family:Inter,sans-serif;font-size:11px;padding:8px 10px;border:1px solid var(--border);background:#fff;color:var(--ink);outline:none;margin-bottom:6px;"
+            onkeydown="if(event.key===\'Enter\')saveLoginWebhook()" />
+          <input type="text" id="login-token-setup" placeholder="Auth token (x-make-apikey)"
             style="width:100%;font-family:Inter,sans-serif;font-size:11px;padding:8px 10px;border:1px solid var(--border);background:#fff;color:var(--ink);outline:none;margin-bottom:6px;"
             onkeydown="if(event.key===\'Enter\')saveLoginWebhook()" />
           <button onclick="saveLoginWebhook()"
             style="width:100%;font-family:Inter,sans-serif;font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:8px;background:transparent;color:var(--muted);border:1px solid var(--border);cursor:pointer;">
-            Save Webhook URL
+            Save
           </button>
           <div id="login-wh-status" style="font-size:10px;color:var(--success);margin-top:6px;min-height:14px;text-align:center;"></div>
         </div>
@@ -1298,14 +1304,22 @@ function initApp() {
 
 function saveLoginWebhook() {
   const url = document.getElementById('login-webhook-setup').value.trim();
-  if (!url) return;
-  localStorage.setItem('kaizen-wh-login', url);
-  // Also update the settings field if it exists
-  const settingsField = document.getElementById('wh-login');
-  if (settingsField) settingsField.value = url;
+  const token = document.getElementById('login-token-setup') ? document.getElementById('login-token-setup').value.trim() : '';
+  if (!url && !token) return;
+  if (url) {
+    localStorage.setItem('kaizen-wh-login', url);
+    const settingsField = document.getElementById('wh-login');
+    if (settingsField) settingsField.value = url;
+    document.getElementById('login-webhook-setup').value = '';
+  }
+  if (token) {
+    localStorage.setItem('kaizen-auth-token', token);
+    const tokenField = document.getElementById('sec-token');
+    if (tokenField) tokenField.value = token;
+    document.getElementById('login-token-setup').value = '';
+  }
   const status = document.getElementById('login-wh-status');
   if (status) { status.textContent = '✓ Saved — now sign in'; setTimeout(() => { if(status) status.textContent=''; }, 3000); }
-  document.getElementById('login-webhook-setup').value = '';
 }
 
 // On login screen load, show if webhook already configured
@@ -1313,8 +1327,11 @@ window.addEventListener('DOMContentLoaded', function() {
   const existing = localStorage.getItem('kaizen-wh-login') || '';
   const setupField = document.getElementById('login-webhook-setup');
   const status = document.getElementById('login-wh-status');
-  if (existing && setupField) {
-    if (status) status.textContent = '✓ Webhook configured';
+  const existingToken = localStorage.getItem('kaizen-auth-token') || '';
+  if (existing && existingToken && setupField) {
+    if (status) status.textContent = '✓ Webhook & token configured';
+  } else if (existing || existingToken) {
+    if (status) status.textContent = '⚠ Partially configured — enter both fields';
   }
 });
 
