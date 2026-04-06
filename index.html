@@ -1079,6 +1079,12 @@ textarea { resize: vertical; min-height: 72px; }
     <div class="settings-section-title">Make Webhook URLs</div>
     <div class="settings-row">
       <div class="field">
+        <label>Login Webhook (IN0) <span class="save-indicator" id="si-login">✓ Saved</span></label>
+        <input type="url" id="wh-login" placeholder="https://hook.us2.make.com/..." oninput="saveWH('login')" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
         <label>FUB Lookup — Buyer (IN1) <span class="save-indicator" id="si-fub-buyer">✓ Saved</span></label>
         <input type="url" id="wh-fub-buyer" placeholder="https://hook.us2.make.com/..." oninput="saveWH('fub-buyer')" />
       </div>
@@ -1111,12 +1117,6 @@ textarea { resize: vertical; min-height: 72px; }
       <div class="field">
         <label>Sync Notion → FUB — Seller (IN5) <span class="save-indicator" id="si-sync-seller">✓ Saved</span></label>
         <input type="url" id="wh-sync-seller" placeholder="https://hook.us2.make.com/..." oninput="saveWH('sync-seller')" />
-      </div>
-    </div>
-    <div class="settings-row">
-      <div class="field">
-        <label>Login Webhook (IN0) <span class="save-indicator" id="si-login">✓ Saved</span></label>
-        <input type="url" id="wh-login" placeholder="https://hook.us2.make.com/..." oninput="saveWH('login')" />
       </div>
     </div>
   </div>
@@ -1601,6 +1601,7 @@ function buildBuyerPayload() {
     fubId: gv('b-fub-id'),
     intakeSource: gv('b-intake-source'),
     stage: 'New Client',
+    assignedAgent: (getSession() || {}).fubName || '',
     // Contact
     name: gv('b-name'),
     email: gv('b-email'),
@@ -1691,6 +1692,7 @@ function buildSellerPayload() {
     fubId: gv('s-fub-id'),
     intakeSource: gv('s-intake-source'),
     stage: 'New Client',
+    assignedAgent: (getSession() || {}).fubName || '',
     // Contact
     name: gv('s-name'),
     email: gv('s-email'),
