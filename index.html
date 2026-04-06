@@ -459,6 +459,129 @@ textarea { resize: vertical; min-height: 72px; }
 }
 .header-logout:hover { color:#aaa; }
 
+
+/* ── Clients Tab ── */
+.client-search-bar {
+  background: var(--black);
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  border-left: 4px solid var(--gold);
+}
+.client-type-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid #333;
+}
+.client-type-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 9px 18px;
+  background: #111;
+  color: #555;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.client-type-btn.active { background: var(--gold); color: var(--black); }
+.client-panel {
+  display: none;
+}
+.client-panel.active { display: block; }
+.client-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--gold);
+  padding: 28px;
+  margin-bottom: 16px;
+}
+.client-card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--black);
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.client-card-title::before {
+  content: '';
+  width: 16px;
+  height: 2px;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+.client-info-bar {
+  background: var(--highlight);
+  border: 1px solid var(--gold-light);
+  border-left: 4px solid var(--gold);
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.client-info-item {
+  font-size: 11px;
+  color: var(--muted);
+}
+.client-info-item strong {
+  color: var(--black);
+  font-weight: 500;
+}
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 20px 28px;
+  background: var(--black);
+  border-top: 3px solid var(--gold);
+  margin-top: 8px;
+}
+.btn-action {
+  font-family: 'Inter', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 10px 16px;
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-action:hover { background: var(--gold); color: var(--black); }
+.btn-action:disabled { color: #444; border-color: #333; cursor: not-allowed; }
+.btn-action.primary { background: var(--gold); color: var(--black); }
+.btn-action.primary:hover { background: var(--gold-light); }
+.btn-action.danger { color: #e05555; border-color: #e05555; }
+.btn-action.danger:hover { background: #e05555; color: #fff; }
+.client-empty {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 2;
+}
+.client-empty .empty-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
 </style>
 </head>
 <body>
@@ -473,6 +596,7 @@ textarea { resize: vertical; min-height: 72px; }
   <div class="header-pills">
     <button class="pill active" onclick="showPage('buyer')">Buyer Intake</button>
     <button class="pill" onclick="showPage('seller')">Seller Intake</button>
+    <button class="pill" onclick="showPage('clients')">Clients</button>
     <button class="pill" id="pill-admin" onclick="showPage('settings')" style="display:none;">⚙ Admin</button>
   </div>
   <div class="header-user-bar" id="header-user-bar">
@@ -1151,6 +1275,34 @@ textarea { resize: vertical; min-height: 72px; }
   </div>
 
   <div class="settings-section">
+    <div class="settings-section-title">Client Management Webhooks</div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Query Buyer (QR1) <span class="save-indicator" id="si-query-buyer">✓ Saved</span></label>
+        <input type="url" id="wh-query-buyer" placeholder="https://hook.us2.make.com/..." oninput="saveWH('query-buyer')" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Query Seller (QR2) <span class="save-indicator" id="si-query-seller">✓ Saved</span></label>
+        <input type="url" id="wh-query-seller" placeholder="https://hook.us2.make.com/..." oninput="saveWH('query-seller')" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Update Buyer (UP1) <span class="save-indicator" id="si-update-buyer">✓ Saved</span></label>
+        <input type="url" id="wh-update-buyer" placeholder="https://hook.us2.make.com/..." oninput="saveWH('update-buyer')" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Update Seller (UP2) <span class="save-indicator" id="si-update-seller">✓ Saved</span></label>
+        <input type="url" id="wh-update-seller" placeholder="https://hook.us2.make.com/..." oninput="saveWH('update-seller')" />
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-section">
     <div class="settings-section-title">Required Make Scenarios</div>
     <div style="font-size:12px;line-height:2.4;color:var(--muted);">
       <div><strong style="color:var(--ink)">IN0 — Login</strong> — verifies username + SHA-256 password hash against Notion Team Logins DB</div>
@@ -1161,6 +1313,213 @@ textarea { resize: vertical; min-height: 72px; }
       <div><strong style="color:var(--ink)">IN5 — Sync Seller → FUB</strong> — same for sellers</div>
     </div>
   </div>
+</main>
+</div>
+
+
+<!-- ══════════ CLIENTS PAGE ══════════ -->
+<div class="page" id="page-clients">
+<main>
+  <div class="page-header">
+    <div class="page-title">Client Management</div>
+    <div class="page-subtitle">Search by FUB ID to load a buyer or seller record from Notion. Edit key fields and trigger task workflows directly.</div>
+  </div>
+
+  <!-- Search bar -->
+  <div class="client-search-bar">
+    <span class="lookup-label">FUB ID</span>
+    <input type="number" class="lookup-input" id="cm-fub-id" placeholder="e.g. 2149" />
+    <div class="client-type-toggle">
+      <button class="client-type-btn active" id="cm-type-buyer" onclick="setCMType('buyer')">Buyer</button>
+      <button class="client-type-btn" id="cm-type-seller" onclick="setCMType('seller')">Seller</button>
+    </div>
+    <button class="btn-lookup" id="cm-lookup-btn" onclick="loadClient()">Load Client</button>
+    <span class="lookup-status idle" id="cm-status">Enter a FUB ID and select type</span>
+  </div>
+
+  <!-- Empty state -->
+  <div class="client-empty" id="cm-empty">
+    <div class="empty-icon">🔍</div>
+    <div>Enter a FUB ID above to load a client record</div>
+    <div style="font-size:11px;margin-top:4px;">Changes are saved directly to Notion</div>
+  </div>
+
+  <!-- Buyer Panel -->
+  <div class="client-panel" id="cm-panel-buyer">
+    <!-- Info bar -->
+    <div class="client-info-bar" id="cm-buyer-info-bar">
+      <div class="client-info-item"><strong id="cm-b-name-display">—</strong></div>
+      <div class="client-info-item">FUB: <strong id="cm-b-fub-display">—</strong></div>
+      <div class="client-info-item">📧 <strong id="cm-b-email-display">—</strong></div>
+      <div class="client-info-item">📱 <strong id="cm-b-phone-display">—</strong></div>
+    </div>
+
+    <!-- Stage & Agent -->
+    <div class="client-card">
+      <div class="client-card-title">Status</div>
+      <div class="grid grid-3">
+        <div class="field">
+          <label>Stage</label>
+          <select id="cm-b-stage">
+            <option value="">— Select —</option>
+            <option>New Client</option>
+            <option>Contacted</option>
+            <option>Active Client</option>
+            <option>Offer Stage</option>
+            <option>Under Contract</option>
+            <option>Firm</option>
+            <option>Closed</option>
+            <option>Dead</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Pre-Approval Status</label>
+          <select id="cm-b-preapproval">
+            <option value="">— Select —</option>
+            <option>Not Started</option>
+            <option>In Process</option>
+            <option>Approved</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Assigned Agent</label>
+          <select id="cm-b-agent">
+            <option value="">— Select —</option>
+            <option>Shaya Mohebbi</option>
+            <option>Michael Lau</option>
+            <option>Neeraj Moolchandani</option>
+            <option>Albert Jeun</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Lawyer</label><input type="text" id="cm-b-lawyer" placeholder="Name / firm" /></div>
+        <div class="field"><label>Budget Range</label><input type="text" id="cm-b-budget" placeholder="$1.2M–$1.5M" /></div>
+      </div>
+    </div>
+
+    <!-- Key Dates -->
+    <div class="client-card" style="border-top-color: #2a2a3a;">
+      <div class="client-card-title">Key Dates</div>
+      <div class="grid grid-3">
+        <div class="field"><label>Ideal Move-In</label><input type="date" id="cm-b-move-in" /></div>
+        <div class="field"><label>Must Move By</label><input type="date" id="cm-b-must-move" /></div>
+        <div class="field"><label>Offer Accepted</label><input type="date" id="cm-b-offer-accepted" /></div>
+      </div>
+      <div class="grid grid-3">
+        <div class="field"><label>Closing Date</label><input type="date" id="cm-b-closing-date" /></div>
+        <div class="field"><label>Financing Deadline</label><input type="date" id="cm-b-financing" /></div>
+        <div class="field"><label>Inspection Deadline</label><input type="date" id="cm-b-inspection" /></div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Status Cert Deadline</label><input type="date" id="cm-b-status-cert" /></div>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="client-card" style="border-top-color: #1a3020;">
+      <div class="client-card-title">Notes</div>
+      <div class="field"><textarea id="cm-b-notes" style="min-height:100px;" placeholder="Internal notes…"></textarea></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-buttons">
+      <button class="btn-action primary" onclick="saveClient('buyer')">💾 Save Changes</button>
+      <button class="btn-action" onclick="syncClientToFUB('buyer')">⟳ Sync → FUB</button>
+      <span style="width:1px;background:#333;margin:0 4px;"></span>
+      <button class="btn-action" onclick="triggerClientAction('b3')">Create B1 Tasks</button>
+      <button class="btn-action" onclick="triggerClientAction('b4')">Stage Tasks</button>
+      <button class="btn-action" onclick="triggerClientAction('b5')">Under Contract Tasks</button>
+      <button class="btn-action" onclick="triggerClientAction('b6')">Closing Date Tasks</button>
+    </div>
+  </div>
+
+  <!-- Seller Panel -->
+  <div class="client-panel" id="cm-panel-seller">
+    <!-- Info bar -->
+    <div class="client-info-bar" id="cm-seller-info-bar">
+      <div class="client-info-item"><strong id="cm-s-name-display">—</strong></div>
+      <div class="client-info-item">📍 <strong id="cm-s-address-display">—</strong></div>
+      <div class="client-info-item">FUB: <strong id="cm-s-fub-display">—</strong></div>
+      <div class="client-info-item">📱 <strong id="cm-s-phone-display">—</strong></div>
+    </div>
+
+    <!-- Stage & Agent -->
+    <div class="client-card">
+      <div class="client-card-title">Status</div>
+      <div class="grid grid-3">
+        <div class="field">
+          <label>Stage</label>
+          <select id="cm-s-stage">
+            <option value="">— Select —</option>
+            <option>New Client</option>
+            <option>Contacted</option>
+            <option>Pre-Listing Prep</option>
+            <option>Active - Listed</option>
+            <option>Offer Received</option>
+            <option>Under Contract</option>
+            <option>Firm</option>
+            <option>Closed</option>
+            <option>Dead</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Assigned Agent</label>
+          <select id="cm-s-agent">
+            <option value="">— Select —</option>
+            <option>Shaya Mohebbi</option>
+            <option>Michael Lau</option>
+            <option>Neeraj Moolchandani</option>
+            <option>Albert Jeun</option>
+          </select>
+        </div>
+        <div class="field"><label>Lawyer</label><input type="text" id="cm-s-lawyer" placeholder="Name / firm" /></div>
+      </div>
+    </div>
+
+    <!-- Key Dates -->
+    <div class="client-card" style="border-top-color: #2a2a3a;">
+      <div class="client-card-title">Key Dates</div>
+      <div class="grid grid-3">
+        <div class="field"><label>Target Launch Date</label><input type="date" id="cm-s-launch" /></div>
+        <div class="field"><label>Offer Accepted</label><input type="date" id="cm-s-offer-accepted" /></div>
+        <div class="field"><label>Closing Date</label><input type="date" id="cm-s-closing-date" /></div>
+      </div>
+      <div class="grid grid-3">
+        <div class="field"><label>Financing Deadline</label><input type="date" id="cm-s-financing" /></div>
+        <div class="field"><label>Inspection Deadline</label><input type="date" id="cm-s-inspection" /></div>
+        <div class="field"><label>Status Cert Deadline</label><input type="date" id="cm-s-status-cert" /></div>
+      </div>
+    </div>
+
+    <!-- Lockbox -->
+    <div class="client-card" style="border-top-color: #3a2010;">
+      <div class="client-card-title">Lockbox</div>
+      <div class="grid grid-3">
+        <div class="field"><label>Lockbox Code</label><input type="text" id="cm-s-lockbox-code" placeholder="e.g. 4829" /></div>
+        <div class="field"><label>Lockbox Location</label><input type="text" id="cm-s-lockbox-location" placeholder="Front door handle…" /></div>
+        <div class="field"><label>Internal Code</label><input type="text" id="cm-s-lockbox-internal" placeholder="Internal reference…" /></div>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="client-card" style="border-top-color: #1a3020;">
+      <div class="client-card-title">Notes</div>
+      <div class="field"><textarea id="cm-s-notes" style="min-height:100px;" placeholder="Internal notes…"></textarea></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-buttons">
+      <button class="btn-action primary" onclick="saveClient('seller')">💾 Save Changes</button>
+      <button class="btn-action" onclick="syncClientToFUB('seller')">⟳ Sync → FUB</button>
+      <span style="width:1px;background:#333;margin:0 4px;"></span>
+      <button class="btn-action" onclick="triggerClientAction('s3')">Create S1 Tasks</button>
+      <button class="btn-action" onclick="triggerClientAction('s4')">Stage Tasks</button>
+      <button class="btn-action" onclick="triggerClientAction('s5')">Launch Date Tasks</button>
+      <button class="btn-action" onclick="triggerClientAction('s6')">Offer Accepted Tasks</button>
+    </div>
+  </div>
+
 </main>
 </div>
 
@@ -1377,7 +1736,7 @@ const state = {
 };
 
 // ── Webhooks (localStorage) ──
-const whKeys = ['fub-buyer','fub-seller','notion-buyer','notion-seller','sync-buyer','sync-seller','login'];
+const whKeys = ['fub-buyer','fub-seller','notion-buyer','notion-seller','sync-buyer','sync-seller','login','query-buyer','query-seller','update-buyer','update-seller'];
 function loadWebhooks() {
   whKeys.forEach(k => {
     const v = localStorage.getItem('kaizen-wh-'+k);
@@ -1871,6 +2230,209 @@ function loadSecurity() {
     const el = document.getElementById('sec-token');
     if (el) el.value = token;
   }
+}
+
+
+// ══════════════════════════════════════════
+// ── Clients Tab ──
+// ══════════════════════════════════════════
+
+const cmState = {
+  type: 'buyer',
+  notionPageId: null,
+  fubId: null
+};
+
+function setCMType(type) {
+  cmState.type = type;
+  document.getElementById('cm-type-buyer').classList.toggle('active', type === 'buyer');
+  document.getElementById('cm-type-seller').classList.toggle('active', type === 'seller');
+}
+
+async function loadClient() {
+  const fubId = document.getElementById('cm-fub-id').value.trim();
+  if (!fubId) { setCMStatus('error', '⚠ Enter a FUB ID first'); return; }
+
+  const whKey = cmState.type === 'buyer' ? 'query-buyer' : 'query-seller';
+  const url = getWH(whKey);
+  if (!url) { setCMStatus('error', '⚠ Query webhook not configured — check Admin Panel'); return; }
+
+  // First use IN1 to get notionPageId from FUB ID via existing sync flow
+  // We query Notion directly using the FUB ID lookup from our existing IN1
+  // But QR1/QR2 need a notionPageId — so we need a two-step:
+  // Step 1: use FUB lookup (IN1) to confirm contact exists
+  // Step 2: use query webhook with notionPageId from Notion search
+  // Simpler: QR1/QR2 can also accept fubId and search Notion by it
+  
+  const btn = document.getElementById('cm-lookup-btn');
+  btn.disabled = true; btn.textContent = 'Loading...';
+  setCMStatus('loading', 'Fetching from Notion...');
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-make-apikey': getAuthToken() },
+      body: JSON.stringify({ fubId, auth_token: getAuthToken() })
+    });
+    if (!res.ok) throw new Error('Make returned ' + res.status);
+    const data = await res.json();
+    if (data.error) { setCMStatus('error', '✗ ' + (data.message || 'Not found')); btn.disabled = false; btn.textContent = 'Load Client'; return; }
+
+    cmState.notionPageId = data.notionPageId;
+    cmState.fubId = fubId;
+    populateClientPanel(cmState.type, data);
+    setCMStatus('success', `✓ Loaded: ${data.name || data.address || fubId}`);
+  } catch(e) {
+    setCMStatus('error', '✗ ' + e.message);
+  }
+  btn.disabled = false; btn.textContent = 'Load Client';
+}
+
+function populateClientPanel(type, data) {
+  // Hide empty, show panel
+  document.getElementById('cm-empty').style.display = 'none';
+  document.getElementById('cm-panel-buyer').classList.toggle('active', type === 'buyer');
+  document.getElementById('cm-panel-seller').classList.toggle('active', type === 'seller');
+
+  if (type === 'buyer') {
+    document.getElementById('cm-b-name-display').textContent = data.name || '—';
+    document.getElementById('cm-b-fub-display').textContent = data.fubId || '—';
+    document.getElementById('cm-b-email-display').textContent = data.email || '—';
+    document.getElementById('cm-b-phone-display').textContent = data.phone || '—';
+    setSelect('cm-b-stage', data.stage || '');
+    setSelect('cm-b-preapproval', data.preApproval || '');
+    setSelect('cm-b-agent', data.assignedAgent || '');
+    setValue('cm-b-lawyer', data.lawyer || '');
+    setValue('cm-b-budget', data.budget || '');
+    setValue('cm-b-move-in', data.moveIn || '');
+    setValue('cm-b-must-move', data.mustMove || '');
+    setValue('cm-b-offer-accepted', data.offerAccepted || '');
+    setValue('cm-b-closing-date', data.closingDate || '');
+    setValue('cm-b-financing', data.financingDeadline || '');
+    setValue('cm-b-inspection', data.inspectionDeadline || '');
+    setValue('cm-b-status-cert', data.statusCertDeadline || '');
+    setValue('cm-b-notes', data.notes || '');
+  } else {
+    document.getElementById('cm-s-name-display').textContent = data.name || '—';
+    document.getElementById('cm-s-address-display').textContent = data.address || '—';
+    document.getElementById('cm-s-fub-display').textContent = data.fubId || '—';
+    document.getElementById('cm-s-phone-display').textContent = data.phone || '—';
+    setSelect('cm-s-stage', data.stage || '');
+    setSelect('cm-s-agent', data.assignedAgent || '');
+    setValue('cm-s-lawyer', data.lawyer || '');
+    setValue('cm-s-launch', data.targetLaunch || '');
+    setValue('cm-s-offer-accepted', data.offerAccepted || '');
+    setValue('cm-s-closing-date', data.closingDate || '');
+    setValue('cm-s-financing', data.financingDeadline || '');
+    setValue('cm-s-inspection', data.inspectionDeadline || '');
+    setValue('cm-s-status-cert', data.statusCertDeadline || '');
+    setValue('cm-s-lockbox-code', data.lockboxCode || '');
+    setValue('cm-s-lockbox-location', data.lockboxLocation || '');
+    setValue('cm-s-lockbox-internal', data.lockboxInternal || '');
+    setValue('cm-s-notes', data.notes || '');
+  }
+}
+
+async function saveClient(type) {
+  if (!cmState.notionPageId) { showToast('Load a client first', 'error'); return; }
+  const url = getWH(type === 'buyer' ? 'update-buyer' : 'update-seller');
+  if (!url) { showToast('Update webhook not configured — check Admin Panel', 'error'); return; }
+
+  let payload = { notionPageId: cmState.notionPageId, auth_token: getAuthToken() };
+
+  if (type === 'buyer') {
+    payload = { ...payload,
+      stage: document.getElementById('cm-b-stage').value,
+      preApproval: document.getElementById('cm-b-preapproval').value,
+      assignedAgent: document.getElementById('cm-b-agent').value,
+      lawyer: document.getElementById('cm-b-lawyer').value,
+      budget: document.getElementById('cm-b-budget').value,
+      moveIn: document.getElementById('cm-b-move-in').value,
+      mustMove: document.getElementById('cm-b-must-move').value,
+      offerAccepted: document.getElementById('cm-b-offer-accepted').value,
+      closingDate: document.getElementById('cm-b-closing-date').value,
+      financingDeadline: document.getElementById('cm-b-financing').value,
+      inspectionDeadline: document.getElementById('cm-b-inspection').value,
+      statusCertDeadline: document.getElementById('cm-b-status-cert').value,
+      notes: document.getElementById('cm-b-notes').value
+    };
+  } else {
+    payload = { ...payload,
+      stage: document.getElementById('cm-s-stage').value,
+      assignedAgent: document.getElementById('cm-s-agent').value,
+      lawyer: document.getElementById('cm-s-lawyer').value,
+      targetLaunch: document.getElementById('cm-s-launch').value,
+      offerAccepted: document.getElementById('cm-s-offer-accepted').value,
+      closingDate: document.getElementById('cm-s-closing-date').value,
+      financingDeadline: document.getElementById('cm-s-financing').value,
+      inspectionDeadline: document.getElementById('cm-s-inspection').value,
+      statusCertDeadline: document.getElementById('cm-s-status-cert').value,
+      lockboxCode: document.getElementById('cm-s-lockbox-code').value,
+      lockboxLocation: document.getElementById('cm-s-lockbox-location').value,
+      lockboxInternal: document.getElementById('cm-s-lockbox-internal').value,
+      notes: document.getElementById('cm-s-notes').value
+    };
+  }
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-make-apikey': getAuthToken() },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('Make returned ' + res.status);
+    const data = await res.json();
+    showToast(data.message || 'Record updated ✓', 'success');
+  } catch(e) {
+    showToast('Save failed: ' + e.message, 'error');
+  }
+}
+
+async function syncClientToFUB(type) {
+  if (!cmState.notionPageId) { showToast('Load a client first', 'error'); return; }
+  const url = getWH(type === 'buyer' ? 'sync-buyer' : 'sync-seller');
+  if (!url) { showToast('Sync webhook not configured', 'error'); return; }
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-make-apikey': getAuthToken() },
+      body: JSON.stringify({ notionPageId: cmState.notionPageId, record_type: type === 'buyer' ? 'Buyer' : 'Seller', auth_token: getAuthToken() })
+    });
+    if (!res.ok) throw new Error('Make returned ' + res.status);
+    const data = await res.json();
+    showToast(data.message || 'Synced to FUB ✓', 'success');
+  } catch(e) {
+    showToast('Sync failed: ' + e.message, 'error');
+  }
+}
+
+async function triggerClientAction(action) {
+  if (!cmState.notionPageId) { showToast('Load a client first', 'error'); return; }
+  // Map action to webhook key — will be wired in step 6
+  const whMap = {
+    'b3': 'action-b3', 'b4': 'action-b4', 'b5': 'action-b5', 'b6': 'action-b6',
+    's3': 'action-s3', 's4': 'action-s4', 's5': 'action-s5', 's6': 'action-s6'
+  };
+  const url = getWH(whMap[action]);
+  if (!url) { showToast(`Action webhook (${action.toUpperCase()}) not configured yet — coming in next step`, 'error'); return; }
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-make-apikey': getAuthToken() },
+      body: JSON.stringify({ notionPageId: cmState.notionPageId, auth_token: getAuthToken() })
+    });
+    if (!res.ok) throw new Error('Make returned ' + res.status);
+    const data = await res.json();
+    showToast(data.message || `${action.toUpperCase()} tasks created ✓`, 'success');
+  } catch(e) {
+    showToast('Action failed: ' + e.message, 'error');
+  }
+}
+
+function setCMStatus(type, msg) {
+  const el = document.getElementById('cm-status');
+  el.className = 'lookup-status ' + type;
+  el.textContent = msg;
 }
 
 // ── Init ──
