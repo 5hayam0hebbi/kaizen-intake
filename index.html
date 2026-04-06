@@ -1269,8 +1269,9 @@ async function lookupFUB(type) {
         setValue('b-partner-phone', data.partnerPhone || '');
         setValue('b-partner-fub-id', data.partnerFubId || '');
       }
+      setValue('b-current-address', data.currentAddress || '');
       state.buyer.fubId = data.fubId || fubId;
-      markPrefilled(['b-name','b-email','b-phone','b-source','b-agent','b-partner-name','b-partner-email','b-partner-phone','b-partner-fub-id']);
+      markPrefilled(['b-name','b-email','b-phone','b-source','b-agent','b-current-address','b-partner-name','b-partner-email','b-partner-phone','b-partner-fub-id']);
     } else {
       setValue('s-name', data.name || '');
       setValue('s-email', data.email || '');
