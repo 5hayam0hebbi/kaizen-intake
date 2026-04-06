@@ -1079,89 +1079,68 @@ textarea { resize: vertical; min-height: 72px; }
     <div class="settings-section-title">Make Webhook URLs</div>
     <div class="settings-row">
       <div class="field">
-        <label>FUB Lookup — Buyer <span class="save-indicator" id="si-fub-buyer">✓ Saved</span></label>
-        <input type="url" id="wh-fub-buyer" placeholder="https://hook.eu1.make.com/..." oninput="saveWH('fub-buyer')" />
+        <label>FUB Lookup — Buyer (IN1) <span class="save-indicator" id="si-fub-buyer">✓ Saved</span></label>
+        <input type="url" id="wh-fub-buyer" placeholder="https://hook.us2.make.com/..." oninput="saveWH('fub-buyer')" />
       </div>
     </div>
     <div class="settings-row">
       <div class="field">
-        <label>FUB Lookup — Seller <span class="save-indicator" id="si-fub-seller">✓ Saved</span></label>
-        <input type="url" id="wh-fub-seller" placeholder="https://hook.eu1.make.com/..." oninput="saveWH('fub-seller')" />
+        <label>FUB Lookup — Seller (IN1) <span class="save-indicator" id="si-fub-seller">✓ Saved</span></label>
+        <input type="url" id="wh-fub-seller" placeholder="https://hook.us2.make.com/..." oninput="saveWH('fub-seller')" />
       </div>
     </div>
     <div class="settings-row">
       <div class="field">
-        <label>Submit Buyer → Notion <span class="save-indicator" id="si-notion-buyer">✓ Saved</span></label>
-        <input type="url" id="wh-notion-buyer" placeholder="https://hook.eu1.make.com/..." oninput="saveWH('notion-buyer')" />
+        <label>Submit Buyer → Notion (IN2) <span class="save-indicator" id="si-notion-buyer">✓ Saved</span></label>
+        <input type="url" id="wh-notion-buyer" placeholder="https://hook.us2.make.com/..." oninput="saveWH('notion-buyer')" />
       </div>
     </div>
     <div class="settings-row">
       <div class="field">
-        <label>Submit Seller → Notion <span class="save-indicator" id="si-notion-seller">✓ Saved</span></label>
-        <input type="url" id="wh-notion-seller" placeholder="https://hook.eu1.make.com/..." oninput="saveWH('notion-seller')" />
+        <label>Submit Seller → Notion (IN3) <span class="save-indicator" id="si-notion-seller">✓ Saved</span></label>
+        <input type="url" id="wh-notion-seller" placeholder="https://hook.us2.make.com/..." oninput="saveWH('notion-seller')" />
       </div>
     </div>
     <div class="settings-row">
       <div class="field">
-        <label>Sync Notion → FUB (Buyer) <span class="save-indicator" id="si-sync-buyer">✓ Saved</span></label>
-        <input type="url" id="wh-sync-buyer" placeholder="https://hook.eu1.make.com/..." oninput="saveWH('sync-buyer')" />
+        <label>Sync Notion → FUB — Buyer (IN4) <span class="save-indicator" id="si-sync-buyer">✓ Saved</span></label>
+        <input type="url" id="wh-sync-buyer" placeholder="https://hook.us2.make.com/..." oninput="saveWH('sync-buyer')" />
       </div>
     </div>
     <div class="settings-row">
       <div class="field">
-        <label>Sync Notion → FUB (Seller) <span class="save-indicator" id="si-sync-seller">✓ Saved</span></label>
-        <input type="url" id="wh-sync-seller" placeholder="https://hook.eu1.make.com/..." oninput="saveWH('sync-seller')" />
+        <label>Sync Notion → FUB — Seller (IN5) <span class="save-indicator" id="si-sync-seller">✓ Saved</span></label>
+        <input type="url" id="wh-sync-seller" placeholder="https://hook.us2.make.com/..." oninput="saveWH('sync-seller')" />
       </div>
+    </div>
     <div class="settings-row">
       <div class="field">
         <label>Login Webhook (IN0) <span class="save-indicator" id="si-login">✓ Saved</span></label>
         <input type="url" id="wh-login" placeholder="https://hook.us2.make.com/..." oninput="saveWH('login')" />
       </div>
     </div>
-    </div>
   </div>
 
   <div class="settings-section">
     <div class="settings-section-title">Security Settings</div>
-    <p style="font-size:11px;color:var(--muted);margin-bottom:18px;line-height:1.7;">The team PIN protects this page from unauthorized access. The auth token is sent with every Make request — add a matching filter in Make to reject requests without it.</p>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:18px;line-height:1.7;">The auth token is sent with every Make request — it must match the API key filter configured in each Make scenario.</p>
     <div class="settings-row">
       <div class="field">
-        <label>Team PIN (shared with all agents) <span class="save-indicator" id="si-pin">✓ Saved</span></label>
-        <input type="password" id="sec-pin" placeholder="kaizen2026" oninput="saveSecurity()" autocomplete="new-password" />
-      </div>
-    </div>
-    <div class="settings-row">
-      <div class="field">
-        <label>Auth Token (must match your Make filter) <span class="save-indicator" id="si-token">✓ Saved</span></label>
-        <input type="text" id="sec-token" placeholder="e.g. kzn_secret_abc123" oninput="saveSecurity()" />
-      </div>
-    </div>
-    <div style="margin-top:12px;padding:12px;background:#fdf0ef;border-left:3px solid var(--accent);font-size:11px;color:#7a3028;line-height:1.7;">
-      ⚠ After changing the team PIN, share the new PIN with your agents. The PIN change takes effect on next page load. After changing the auth token, update your Make scenarios accordingly.
-    </div>
-  </div>
-
-
-    <div style="font-size:12px;color:var(--muted);line-height:2.2;">
-      <div>1. Open each scenario in Make</div>
-      <div>2. Click the <strong style="color:var(--ink)">Custom Webhook</strong> trigger module</div>
-      <div>3. Click <strong style="color:var(--ink)">Copy address to clipboard</strong></div>
-      <div>4. Paste the URL in the corresponding field above</div>
-      <div style="margin-top:12px;padding:12px;background:#f4f1eb;border-left:3px solid var(--accent);font-size:11px;">
-        ⚠ For the FUB Lookup webhooks, enable <strong style="color:var(--ink)">"Immediately return a response"</strong> on the Custom Webhook module in Make, and add a Webhook Response module at the end of the scenario. Otherwise the auto-populate won't work.
+        <label>Auth Token (x-make-apikey) <span class="save-indicator" id="si-token">✓ Saved</span></label>
+        <input type="text" id="sec-token" placeholder="e.g. INTAKEvGW16ALCef6..." oninput="saveSecurity()" />
       </div>
     </div>
   </div>
 
   <div class="settings-section">
-    <div class="settings-section-title">Required Make scenarios for this page</div>
+    <div class="settings-section-title">Required Make Scenarios</div>
     <div style="font-size:12px;line-height:2.4;color:var(--muted);">
-      <div><strong style="color:var(--ink)">FUB Lookup — Buyer</strong> — receives fub_person_id, fetches FUB contact, returns JSON response with contact data</div>
-      <div><strong style="color:var(--ink)">FUB Lookup — Seller</strong> — same for sellers/listings</div>
-      <div><strong style="color:var(--ink)">Submit Buyer → Notion</strong> — receives full buyer form payload, creates or updates Notion Buyers DB record, returns notionPageId</div>
-      <div><strong style="color:var(--ink)">Submit Seller → Notion</strong> — same for Listings_Sellers DB</div>
-      <div><strong style="color:var(--ink)">Sync Notion → FUB (Buyer)</strong> — receives notionPageId, reads Notion record, updates FUB contact with latest data</div>
-      <div><strong style="color:var(--ink)">Sync Notion → FUB (Seller)</strong> — same for sellers</div>
+      <div><strong style="color:var(--ink)">IN0 — Login</strong> — verifies username + SHA-256 password hash against Notion Team Logins DB</div>
+      <div><strong style="color:var(--ink)">IN1 — FUB Lookup</strong> — receives fub_person_id, fetches contact from FUB, returns JSON to pre-fill form</div>
+      <div><strong style="color:var(--ink)">IN2 — Submit Buyer → Notion</strong> — receives full buyer payload, creates or updates Buyers DB record, returns notionPageId</div>
+      <div><strong style="color:var(--ink)">IN3 — Submit Seller → Notion</strong> — same for Listings_Sellers DB</div>
+      <div><strong style="color:var(--ink)">IN4 — Sync Buyer → FUB</strong> — receives notionPageId, reads Notion record, syncs to FUB contact</div>
+      <div><strong style="color:var(--ink)">IN5 — Sync Seller → FUB</strong> — same for sellers</div>
     </div>
   </div>
 </main>
@@ -1851,13 +1830,7 @@ function getAuthToken() {
 }
 
 function saveSecurity() {
-  const pin = document.getElementById('sec-pin').value;
   const token = document.getElementById('sec-token').value;
-  if (pin) {
-    localStorage.setItem('kaizen-team-pin', pin);
-    const si = document.getElementById('si-pin');
-    if (si) { si.classList.add('show'); setTimeout(() => si.classList.remove('show'), 1500); }
-  }
   if (token) {
     localStorage.setItem('kaizen-auth-token', token);
     const si = document.getElementById('si-token');
@@ -1866,10 +1839,11 @@ function saveSecurity() {
 }
 
 function loadSecurity() {
-  const pin = localStorage.getItem('kaizen-team-pin');
   const token = localStorage.getItem('kaizen-auth-token');
-  if (pin) document.getElementById('sec-pin').value = pin;
-  if (token) document.getElementById('sec-token').value = token;
+  if (token) {
+    const el = document.getElementById('sec-token');
+    if (el) el.value = token;
+  }
 }
 
 // ── Init ──
