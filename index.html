@@ -473,7 +473,7 @@ textarea { resize: vertical; min-height: 72px; }
   <div class="header-pills">
     <button class="pill active" onclick="showPage('buyer')">Buyer Intake</button>
     <button class="pill" onclick="showPage('seller')">Seller Intake</button>
-    <button class="pill" id="pill-webhooks" onclick="showPage('settings')">⚙ Webhooks</button>
+    <button class="pill" id="pill-admin" onclick="showPage('settings')" style="display:none;">⚙ Admin</button>
   </div>
   <div class="header-user-bar" id="header-user-bar">
     <span class="header-user-name" id="header-user-name"></span>
@@ -1071,8 +1071,8 @@ textarea { resize: vertical; min-height: 72px; }
 <div class="page" id="page-settings">
 <main>
   <div class="page-header">
-    <div class="page-title">Webhook Configuration</div>
-    <div class="page-subtitle">Paste your Make webhook URLs below. They are saved in your browser and never leave this page.</div>
+    <div class="page-title">Admin Panel</div>
+    <div class="page-subtitle">Manage webhook URLs, security settings, and team configuration. Visible to admins only.</div>
   </div>
 
   <div class="settings-section">
@@ -1236,7 +1236,17 @@ async function doLogin() {
       document.getElementById('login-password').value = '';
       document.getElementById('login-password').focus();
     }
-  } catch(e) { errEl.textContent = 'Login failed: ' + e.message; }
+  } catch(e) {
+    errEl.textContent = 'Login failed: ' + e.message;
+    // Auto-show setup panel on error if webhook not configured
+    const whUrl2 = localStorage.getItem('kaizen-wh-login') || '';
+    if (!whUrl2 || e.message.includes('401') || e.message.includes('Failed to fetch')) {
+      const panel = document.getElementById('login-setup-panel');
+      const btn = document.getElementById('setup-toggle-btn');
+      if (panel) panel.style.display = 'block';
+      if (btn) btn.style.display = 'none';
+    }
+  }
   btn.disabled = false; btn.textContent = 'Sign In';
 }
 
@@ -1250,8 +1260,9 @@ function initApp() {
   if (barEl) barEl.style.display = 'flex';
   // Hide webhooks pill from non-admins
   if (session.role !== 'admin') {
-    const pill = document.getElementById('pill-webhooks');
-    if (pill) pill.style.display = 'none';
+    // Show admin pill only for admins
+    const adminPill = document.getElementById('pill-admin');
+    if (adminPill && session.role === 'admin') adminPill.style.display = 'flex';
   }
   // Pre-set assigned agent on buyer form
   if (session.fubName) setSelect('b-agent', session.fubName);
@@ -1280,8 +1291,14 @@ function initApp() {
         </div>
         <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
         <div class="login-error" id="login-error"></div>
-        <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border);">
-          <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:500;">First-time setup (admin only)</div>
+        <div style="margin-top:20px;text-align:center;">
+          <button onclick="toggleSetupPanel()" id="setup-toggle-btn"
+            style="font-family:Inter,sans-serif;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);background:none;border:none;cursor:pointer;padding:4px 8px;text-decoration:underline;">
+            Configure webhooks
+          </button>
+        </div>
+        <div id="login-setup-panel" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+          <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-weight:500;">First-time setup — admin only</div>
           <input type="text" id="login-webhook-setup" placeholder="Login webhook URL"
             style="width:100%;font-family:Inter,sans-serif;font-size:11px;padding:8px 10px;border:1px solid var(--border);background:#fff;color:var(--ink);outline:none;margin-bottom:6px;"
             onkeydown="if(event.key===\'Enter\')saveLoginWebhook()" />
@@ -1301,6 +1318,15 @@ function initApp() {
     setTimeout(() => document.getElementById('login-username').focus(), 100);
   });
 })();
+
+function toggleSetupPanel() {
+  const panel = document.getElementById('login-setup-panel');
+  const btn = document.getElementById('setup-toggle-btn');
+  if (!panel) return;
+  const showing = panel.style.display !== 'none';
+  panel.style.display = showing ? 'none' : 'block';
+  if (btn) btn.textContent = showing ? 'Configure webhooks' : 'Hide setup';
+}
 
 function saveLoginWebhook() {
   const url = document.getElementById('login-webhook-setup').value.trim();
@@ -1328,10 +1354,13 @@ window.addEventListener('DOMContentLoaded', function() {
   const setupField = document.getElementById('login-webhook-setup');
   const status = document.getElementById('login-wh-status');
   const existingToken = localStorage.getItem('kaizen-auth-token') || '';
-  if (existing && existingToken && setupField) {
-    if (status) status.textContent = '✓ Webhook & token configured';
-  } else if (existing || existingToken) {
-    if (status) status.textContent = '⚠ Partially configured — enter both fields';
+  // Only show status if setup panel is visible
+  if (status) {
+    if (existing && existingToken) {
+      status.textContent = '✓ Webhook & token configured';
+    } else if (existing || existingToken) {
+      status.textContent = '⚠ Partially configured — enter both fields';
+    }
   }
 });
 
