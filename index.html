@@ -765,7 +765,7 @@ textarea { resize: vertical; min-height: 72px; }
           <option>Shaya Mohebbi</option>
           <option>Michael Lau</option>
           <option>Neeraj Moolchandani</option>
-          <option>Albert Juen</option>
+          <option>Albert Jeun</option>
         </select>
       </div>
     </div>
@@ -1067,7 +1067,7 @@ textarea { resize: vertical; min-height: 72px; }
           <option>Shaya Mohebbi</option>
           <option>Michael Lau</option>
           <option>Neeraj Moolchandani</option>
-          <option>Albert Juen</option>
+          <option>Albert Jeun</option>
         </select>
       </div>
     </div>
@@ -1464,9 +1464,6 @@ async function lookupFUB(type) {
     if (!res.ok) throw new Error('Make returned ' + res.status);
     const data = await res.json();
 
-    // Debug: log what IN1 returned
-    console.log('[IN1 response]', JSON.stringify(data));
-
     // Handle FUB not found or access denied errors returned as 200 with error flag
     if (data.error) {
       setLookupStatus(p, 'error', '✗ ' + (data.message || 'FUB ID not found'));
@@ -1497,7 +1494,6 @@ async function lookupFUB(type) {
       setValue('b-source', data.source || '');
       setValue('b-fub-id', data.fubId || fubId);
       setValue('b-intake-source', 'FUB');
-      if (data.assignedTo) setSelect('b-agent', data.assignedTo);
       // Partner from spouse URL
       if (data.partnerName || data.partnerFubId) {
         state.buyer.partnerOn = false;
@@ -1508,6 +1504,7 @@ async function lookupFUB(type) {
         setValue('b-partner-fub-id', data.partnerFubId || '');
       }
       setValue('b-current-address', data.currentAddress || '');
+      if (data.assignedTo) setSelect('b-agent', data.assignedTo);
       state.buyer.fubId = data.fubId || fubId;
       markPrefilled(['b-name','b-email','b-phone','b-source','b-agent','b-current-address','b-partner-name','b-partner-email','b-partner-phone','b-partner-fub-id']);
     } else {
