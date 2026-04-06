@@ -756,9 +756,18 @@ textarea { resize: vertical; min-height: 72px; }
     <div class="grid grid-1">
       <div class="field"><label>Notes</label><textarea id="b-notes" placeholder="Any additional context…"></textarea></div>
     </div>
-    <div class="grid grid-2">
+    <div class="grid grid-3">
       <div class="field"><label>FUB Person ID</label><input type="text" id="b-fub-id" placeholder="auto-filled" readonly style="color:var(--muted);cursor:not-allowed;" /></div>
       <div class="field"><label>Intake Source</label><input type="text" id="b-intake-source" value="Manual" readonly style="color:var(--muted);cursor:not-allowed;" /></div>
+      <div class="field"><label>Assigned Agent</label>
+        <select id="b-agent">
+          <option value="">— Select —</option>
+          <option>Shaya Mohebbi</option>
+          <option>Michael Lau</option>
+          <option>Neeraj Moolchandani</option>
+          <option>Albert Juen</option>
+        </select>
+      </div>
     </div>
     <div class="notion-id-bar" id="b-notion-id-bar">
       <span class="notion-id-text" id="b-notion-id-text"></span>
@@ -1049,9 +1058,18 @@ textarea { resize: vertical; min-height: 72px; }
     <div class="grid grid-1">
       <div class="field"><label>Notes</label><textarea id="s-notes" placeholder="Any additional context about this seller or listing…"></textarea></div>
     </div>
-    <div class="grid grid-2">
+    <div class="grid grid-3">
       <div class="field"><label>FUB Client ID</label><input type="text" id="s-fub-id" placeholder="auto-filled" readonly style="color:var(--muted);cursor:not-allowed;" /></div>
       <div class="field"><label>Intake Source</label><input type="text" id="s-intake-source" value="Manual" readonly style="color:var(--muted);cursor:not-allowed;" /></div>
+      <div class="field"><label>Assigned Agent</label>
+        <select id="s-agent">
+          <option value="">— Select —</option>
+          <option>Shaya Mohebbi</option>
+          <option>Michael Lau</option>
+          <option>Neeraj Moolchandani</option>
+          <option>Albert Juen</option>
+        </select>
+      </div>
     </div>
     <div class="notion-id-bar" id="s-notion-id-bar">
       <span class="notion-id-text" id="s-notion-id-text"></span>
@@ -1241,7 +1259,10 @@ function initApp() {
   const adminPill = document.getElementById('pill-admin');
   if (adminPill) adminPill.style.display = (session.role || '').toLowerCase() === 'admin' ? 'flex' : 'none';
   // Pre-set assigned agent on buyer form
-  if (session.fubName) setSelect('b-agent', session.fubName);
+  if (session.fubName) {
+    setSelect('b-agent', session.fubName);
+    setSelect('s-agent', session.fubName);
+  }
 }
 
 (function() {
@@ -1501,8 +1522,9 @@ async function lookupFUB(type) {
         setValue('s-partner-fub-id', data.partnerFubId || '');
       }
       setValue('s-address', data.currentAddress || '');
+      if (data.assignedTo) setSelect('s-agent', data.assignedTo);
       state.seller.fubId = data.fubId || fubId;
-      markPrefilled(['s-name','s-email','s-phone','s-source','s-address','s-partner-name','s-partner-email','s-partner-phone','s-partner-fub-id']);
+      markPrefilled(['s-name','s-email','s-phone','s-source','s-address','s-agent','s-partner-name','s-partner-email','s-partner-phone','s-partner-fub-id']);
     }
 
     setLookupStatus(p, 'success', `✓ Loaded: ${data.name || 'contact'} (FUB ID ${fubId})`);
@@ -1555,9 +1577,7 @@ async function submitIntake(type) {
   if (!name) { showToast('Name is required', 'error'); return; }
 
   const payload = type === 'buyer' ? buildBuyerPayload() : buildSellerPayload();
-  // Auto-set assigned agent from session
-  const _sess = getSession();
-  if (_sess && _sess.fubName) payload.assignedAgent = _sess.fubName;
+  // assignedAgent comes from form select (b-agent / s-agent)
   payload.auth_token = getAuthToken();
   btn.disabled = true;
   btn.textContent = 'Saving...';
@@ -1601,7 +1621,7 @@ function buildBuyerPayload() {
     fubId: gv('b-fub-id'),
     intakeSource: gv('b-intake-source'),
     stage: 'New Client',
-    assignedAgent: (getSession() || {}).fubName || '',
+    assignedAgent: gv('b-agent'),
     // Contact
     name: gv('b-name'),
     email: gv('b-email'),
@@ -1692,7 +1712,7 @@ function buildSellerPayload() {
     fubId: gv('s-fub-id'),
     intakeSource: gv('s-intake-source'),
     stage: 'New Client',
-    assignedAgent: (getSession() || {}).fubName || '',
+    assignedAgent: gv('s-agent'),
     // Contact
     name: gv('s-name'),
     email: gv('s-email'),
