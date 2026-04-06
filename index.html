@@ -496,7 +496,7 @@ textarea { resize: vertical; min-height: 72px; }
   <div class="form-section" style="--section-color:#7a5ab0;">
     <div class="section-title">3 — Background</div>
     <div class="grid grid-2">
-      <div class="field"><label>Buyer DISC Profile</label>
+      <div class="field"><label>Client DISC Profile</label>
         <select id="b-disc">
           <option value="">— Select —</option>
           <option>Straight to the point (D)</option>
@@ -760,6 +760,24 @@ textarea { resize: vertical; min-height: 72px; }
     <div class="grid grid-2">
       <div class="field"><label>Who else is part of decisions?</label><input type="text" id="s-decision-makers" placeholder="Names / roles" /></div>
       <div class="field"><label>Partner FUB Client ID</label><input type="text" id="s-partner-fub-id" placeholder="auto-filled from FUB" /></div>
+      <div class="field"><label>Client DISC Profile</label>
+        <select id="s-disc">
+          <option value="">— Select —</option>
+          <option value="Straight to the point (D)">Straight to the point (D)</option>
+          <option value="Social &amp; Outgoing (I)">Social &amp; Outgoing (I)</option>
+          <option value="Steady &amp; Dependable (S)">Steady &amp; Dependable (S)</option>
+          <option value="Caution &amp; Perfectly Accurate (C)">Caution &amp; Perfectly Accurate (C)</option>
+        </select>
+      </div>
+      <div class="field"><label>Partner 2 DISC Profile</label>
+        <select id="s-partner-disc">
+          <option value="">— Select —</option>
+          <option value="Straight to the point (D)">Straight to the point (D)</option>
+          <option value="Social &amp; Outgoing (I)">Social &amp; Outgoing (I)</option>
+          <option value="Steady &amp; Dependable (S)">Steady &amp; Dependable (S)</option>
+          <option value="Caution &amp; Perfectly Accurate (C)">Caution &amp; Perfectly Accurate (C)</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -1526,7 +1544,9 @@ function buildSellerPayload() {
     googleReview: gv('s-google-review'),
     shareSocial: gv('s-share-social'),
     consent: gv('s-consent'),
-    notes: gv('s-notes')
+    notes: gv('s-notes'),
+    disc: gv('s-disc'),
+    partnerDisc: gv('s-partner-disc')
   };
 }
 
