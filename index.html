@@ -1464,6 +1464,27 @@ async function lookupFUB(type) {
     if (!res.ok) throw new Error('Make returned ' + res.status);
     const data = await res.json();
 
+    // Handle FUB not found or access denied errors returned as 200 with error flag
+    if (data.error) {
+      setLookupStatus(p, 'error', '✗ ' + (data.message || 'FUB ID not found'));
+      showToast(data.message || 'FUB ID not found', 'error');
+      btn.disabled = false; btn.textContent = 'Auto-Populate';
+      return;
+    }
+
+    // Agent access check — non-admins can only load their own assigned contacts
+    const _session = getSession();
+    if (_session && _session.role !== 'admin') {
+      const assignedTo = (data.assignedTo || '').toLowerCase();
+      const agentName = (_session.fubName || '').toLowerCase();
+      if (assignedTo && agentName && assignedTo !== agentName) {
+        setLookupStatus(p, 'error', '✗ Access denied — this contact is not assigned to you');
+        showToast('Access denied — contact assigned to ' + data.assignedTo, 'error');
+        btn.disabled = false; btn.textContent = 'Auto-Populate';
+        return;
+      }
+    }
+
     // Populate fields
     clearPrefilled(p+'-');
     if (type === 'buyer') {
