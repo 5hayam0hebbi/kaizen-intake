@@ -1554,10 +1554,13 @@ function setValue(id, val) {
 
 function setSelect(id, val) {
   const el = document.getElementById(id);
-  if (!el) return;
-  for (let opt of el.options) {
-    if (opt.value.toLowerCase().includes(val.toLowerCase()) || val.toLowerCase().includes(opt.value.toLowerCase())) {
-      el.value = opt.value;
+  if (!el || !val) return;
+  const v = val.toLowerCase();
+  for (let i = 0; i < el.options.length; i++) {
+    const optText = el.options[i].text.toLowerCase();
+    const optVal = el.options[i].value.toLowerCase();
+    if (optText === v || optVal === v || optText.includes(v) || v.includes(optText)) {
+      el.selectedIndex = i;
       return;
     }
   }
