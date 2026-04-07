@@ -1383,6 +1383,62 @@ textarea { resize: vertical; min-height: 72px; }
   </div>
 
   <div class="settings-section">
+    <div class="settings-section-title">Buyer Action Webhooks</div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Create B1 Tasks (B3-WH) <span class="save-indicator" id="si-action-b3">✓ Saved</span></label>
+        <input type="url" id="wh-action-b3" placeholder="https://hook.us2.make.com/..." oninput="saveWH('action-b3')" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Stage Tasks (B4-WH) <span class="save-indicator" id="si-action-b4">✓ Saved</span></label>
+        <input type="url" id="wh-action-b4" placeholder="https://hook.us2.make.com/..." oninput="saveWH('action-b4')" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Under Contract Tasks (B5-WH) <span class="save-indicator" id="si-action-b5">✓ Saved</span></label>
+        <input type="url" id="wh-action-b5" placeholder="https://hook.us2.make.com/..." oninput="saveWH('action-b5')" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Closing Date Tasks (B6-WH) <span class="save-indicator" id="si-action-b6">✓ Saved</span></label>
+        <input type="url" id="wh-action-b6" placeholder="https://hook.us2.make.com/..." oninput="saveWH('action-b6')" />
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Seller Action Webhooks</div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Create S1 Tasks (S3-WH) <span class="save-indicator" id="si-action-s3">✓ Saved</span></label>
+        <input type="url" id="wh-action-s3" placeholder="https://hook.us2.make.com/..." oninput="saveWH('action-s3')" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Stage Tasks (S4-WH) <span class="save-indicator" id="si-action-s4">✓ Saved</span></label>
+        <input type="url" id="wh-action-s4" placeholder="https://hook.us2.make.com/..." oninput="saveWH('action-s4')" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Launch Date Tasks (S5-WH) <span class="save-indicator" id="si-action-s5">✓ Saved</span></label>
+        <input type="url" id="wh-action-s5" placeholder="https://hook.us2.make.com/..." oninput="saveWH('action-s5')" />
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="field">
+        <label>Offer Accepted Tasks (S6-WH) <span class="save-indicator" id="si-action-s6">✓ Saved</span></label>
+        <input type="url" id="wh-action-s6" placeholder="https://hook.us2.make.com/..." oninput="saveWH('action-s6')" />
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-section">
     <div class="settings-section-title">Required Make Scenarios</div>
     <div style="font-size:12px;line-height:2.4;color:var(--muted);">
       <div><strong style="color:var(--ink)">IN0 — Login</strong> — verifies username + SHA-256 password hash against Notion Team Logins DB</div>
@@ -1847,7 +1903,7 @@ const state = {
 };
 
 // ── Webhooks (localStorage) ──
-const whKeys = ['fub-buyer','fub-seller','notion-buyer','notion-seller','sync-buyer','sync-seller','login','query-buyer','query-seller','update-buyer','update-seller','query-tasks','update-task'];
+const whKeys = ['fub-buyer','fub-seller','notion-buyer','notion-seller','sync-buyer','sync-seller','login','query-buyer','query-seller','update-buyer','update-seller','query-tasks','update-task','action-b3','action-b4','action-b5','action-b6','action-s3','action-s4','action-s5','action-s6'];
 function loadWebhooks() {
   whKeys.forEach(k => {
     const v = localStorage.getItem('kaizen-wh-'+k);
