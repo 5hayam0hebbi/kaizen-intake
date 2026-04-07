@@ -620,6 +620,12 @@ textarea { resize: vertical; min-height: 72px; }
   color: var(--gold-dark);
 }
 .task-due { font-size: 11px; font-weight: 600; white-space: nowrap; }
+.task-client-link {
+  cursor: pointer; color: var(--gold-dark);
+  text-decoration: underline; text-underline-offset: 2px;
+  font-size: 10px;
+}
+.task-client-link:hover { color: var(--gold); }
 .task-due.overdue { color: #c0392b; }
 .task-due.today { color: #e08a00; }
 .task-due.soon { color: #4a7ab5; }
@@ -2740,7 +2746,7 @@ function renderTasks(filter) {
             <div class="task-name">${escapeHtml(task.name || '—')}</div>
             <div class="task-meta">
               ${task.stageLabel ? `<span class="task-tag">${escapeHtml(task.stageLabel)}</span>` : ''}
-              ${task.assignee ? `<span>👤 ${escapeHtml(task.assignee)}</span>` : ''}
+              ${task.fubPersonId ? `<span class="task-client-link" onclick="jumpToClient('${task.fubPersonId}','${task.type}',event)" title="Open client in Clients tab">👤 ${escapeHtml(task.clientName || 'FUB #' + task.fubPersonId)}</span>` : (task.assignee ? `<span>👤 ${escapeHtml(task.assignee)}</span>` : '')}
               ${task.priority ? `<span>● ${task.priority}</span>` : ''}
               ${task.status ? `<span>${escapeHtml(task.status)}</span>` : ''}
             </div>
@@ -2755,6 +2761,17 @@ function renderTasks(filter) {
   });
 
   list.innerHTML = html;
+}
+
+function jumpToClient(fubPersonId, taskType, event) {
+  event.stopPropagation();
+  // Set client type based on task type
+  const type = (taskType === 'Buyer_SOP') ? 'buyer' : 'seller';
+  setCMType(type);
+  // Pre-fill FUB ID and trigger load
+  document.getElementById('cm-fub-id').value = fubPersonId;
+  showPage('clients');
+  loadClient();
 }
 
 function escapeHtml(str) {
