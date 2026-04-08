@@ -682,6 +682,7 @@ textarea { resize: vertical; min-height: 72px; }
 <!-- ══════════ BUYER PAGE ══════════ -->
 <!-- ══════════ BUYER PAGE ══════════ -->
 <div class="page active" id="page-buyer">
+<div id="b-readonly-banner" style="display:none;background:var(--gold);color:#000;padding:8px 20px;font-size:13px;font-weight:600;text-align:center;">📋 Read-only view — all fields loaded from Notion. <a href="https://5hayam0hebbi.github.io/kaizen-intake/" style="color:#000;text-decoration:underline;">Open editable form</a></div>
 <main>
   <div class="page-header">
     <div class="page-title">Buyer Intake Form</div>
@@ -719,7 +720,15 @@ textarea { resize: vertical; min-height: 72px; }
     </div>
     <div class="grid grid-2">
       <div class="field"><label>Current Home Address</label><input type="text" id="b-current-address" placeholder="123 Main St, Toronto" /></div>
-      <div class="field"><label>Who else is part of decisions?</label><input type="text" id="b-decision-makers" placeholder="Names / roles" /></div>
+      <div class="field"><label>Client DISC Profile</label>
+        <select id="b-disc">
+          <option value="">— Select —</option>
+          <option>Straight to the point (D)</option>
+          <option>Social &amp; Outgoing (I)</option>
+          <option>Steady &amp; Dependable (S)</option>
+          <option>Caution &amp; Perfectly Accurate (C)</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -755,15 +764,6 @@ textarea { resize: vertical; min-height: 72px; }
   <div class="form-section" style="--section-color:#7a5ab0;">
     <div class="section-title">3 — Background</div>
     <div class="grid grid-2">
-      <div class="field"><label>Client DISC Profile</label>
-        <select id="b-disc">
-          <option value="">— Select —</option>
-          <option>Straight to the point (D)</option>
-          <option>Social &amp; Outgoing (I)</option>
-          <option>Steady &amp; Dependable (S)</option>
-          <option>Caution &amp; Perfectly Accurate (C)</option>
-        </select>
-      </div>
       <div class="field"><label>What's prompting the move? <span class="req">*</span></label><input type="text" id="b-motivation" placeholder="Upsizing, relocating, investment…" /></div>
     </div>
     <div class="grid grid-3">
@@ -957,7 +957,7 @@ textarea { resize: vertical; min-height: 72px; }
     <div class="grid grid-3">
       <div class="field"><label>FUB Person ID</label><input type="text" id="b-fub-id" placeholder="auto-filled" readonly style="color:var(--muted);cursor:not-allowed;" /></div>
       <div class="field"><label>Intake Source</label><input type="text" id="b-intake-source" value="Manual" readonly style="color:var(--muted);cursor:not-allowed;" /></div>
-      <div class="field"><label>Assigned Agent</label>
+      <div class="field"><label>Task Agent <span style="font-size:10px;color:var(--muted);font-weight:400;">(for task assignment)</span></label>
         <select id="b-agent">
           <option value="">— Select —</option>
           <option>Shaya Mohebbi</option>
@@ -984,6 +984,7 @@ textarea { resize: vertical; min-height: 72px; }
 
 <!-- ══════════ SELLER PAGE ══════════ -->
 <div class="page" id="page-seller">
+<div id="s-readonly-banner" style="display:none;background:var(--gold);color:#000;padding:8px 20px;font-size:13px;font-weight:600;text-align:center;">📋 Read-only view — all fields loaded from Notion. <a href="https://5hayam0hebbi.github.io/kaizen-intake/" style="color:#000;text-decoration:underline;">Open editable form</a></div>
 <main>
   <div class="page-header">
     <div class="page-title">Seller Intake Form</div>
@@ -1259,7 +1260,7 @@ textarea { resize: vertical; min-height: 72px; }
     <div class="grid grid-3">
       <div class="field"><label>FUB Client ID</label><input type="text" id="s-fub-id" placeholder="auto-filled" readonly style="color:var(--muted);cursor:not-allowed;" /></div>
       <div class="field"><label>Intake Source</label><input type="text" id="s-intake-source" value="Manual" readonly style="color:var(--muted);cursor:not-allowed;" /></div>
-      <div class="field"><label>Assigned Agent</label>
+      <div class="field"><label>Task Agent <span style="font-size:10px;color:var(--muted);font-weight:400;">(for task assignment)</span></label>
         <select id="s-agent">
           <option value="">— Select —</option>
           <option>Shaya Mohebbi</option>
@@ -1795,6 +1796,53 @@ function initApp() {
     setSelect('b-agent', session.fubName);
     setSelect('s-agent', session.fubName);
   }
+  // Handle URL-based read-only viewer: ?buyer=2311 or ?seller=2311
+  handleViewURL();
+}
+
+async function handleViewURL() {
+  const params = new URLSearchParams(window.location.search);
+  const buyerId = params.get('buyer');
+  const sellerId = params.get('seller');
+  if (!buyerId && !sellerId) return;
+  await new Promise(r => setTimeout(r, 150));
+  if (buyerId) {
+    // Switch to buyer tab without needing click event
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-buyer').classList.add('active');
+    document.querySelector('.pill[onclick*="buyer"]').classList.add('active');
+    document.getElementById('b-fub-id').value = buyerId;
+    await lookupFUB('buyer');
+    setFormReadOnly('buyer', true);
+  } else if (sellerId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-seller').classList.add('active');
+    document.querySelector('.pill[onclick*="seller"]').classList.add('active');
+    document.getElementById('s-fub-id').value = sellerId;
+    await lookupFUB('seller');
+    setFormReadOnly('seller', true);
+  }
+}
+
+function setFormReadOnly(type, on) {
+  const page = document.getElementById('page-' + type);
+  if (!page) return;
+  const banner = document.getElementById((type === 'buyer' ? 'b' : 's') + '-readonly-banner');
+  if (banner) banner.style.display = on ? 'block' : 'none';
+  const actionBar = page.querySelector('.action-bar');
+  if (actionBar) actionBar.style.display = on ? 'none' : '';
+  page.querySelectorAll('input:not([readonly]), select, textarea').forEach(el => {
+    if (on) {
+      el.setAttribute('data-ro', el.disabled ? '1' : '0');
+      el.disabled = true;
+      el.style.cursor = 'default';
+    } else {
+      if (el.getAttribute('data-ro') !== '1') el.disabled = false;
+      el.style.cursor = '';
+    }
+  });
 }
 
 (function() {
@@ -2252,14 +2300,14 @@ function buildSellerPayload() {
     name: gv('s-name'),
     email: gv('s-email'),
     phone: gv('s-phone'),
-    partnerName: gv('s-partner-name'),
-    partnerEmail: gv('s-partner-email'),
-    partnerPhone: gv('s-partner-phone'),
-    partnerFubId: gv('s-partner-fub-id'),
+    // Partner — only include if value present so re-save doesn't wipe Notion
+    ...(gv('s-partner-name')   && { partnerName:   gv('s-partner-name')   }),
+    ...(gv('s-partner-email')  && { partnerEmail:  gv('s-partner-email')  }),
+    ...(gv('s-partner-phone')  && { partnerPhone:  gv('s-partner-phone')  }),
+    ...(gv('s-partner-fub-id') && { partnerFubId:  gv('s-partner-fub-id') }),
     channel: gv('s-channel'),
     bestTime: gv('s-best-time'),
     source: gv('s-source'),
-    decisionMakers: gv('s-decision-makers'),
     // Property Info
     address: gv('s-address'),
     structure: gv('s-structure'),
@@ -2322,7 +2370,7 @@ function buildSellerPayload() {
     consent: gv('s-consent'),
     notes: gv('s-notes'),
     disc: gv('s-disc'),
-    partnerDisc: gv('s-partner-disc')
+    ...(gv('s-partner-disc') && { partnerDisc: gv('s-partner-disc') })
   };
 }
 
