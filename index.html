@@ -1812,7 +1812,7 @@ async function handleViewURL() {
     document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
     document.getElementById('page-buyer').classList.add('active');
     document.querySelector('.pill[onclick*="buyer"]').classList.add('active');
-    document.getElementById('b-fub-id').value = buyerId;
+    document.getElementById('b-fub-lookup').value = buyerId;
     await lookupFUB('buyer');
     setFormReadOnly('buyer', true);
   } else if (sellerId) {
@@ -1820,7 +1820,7 @@ async function handleViewURL() {
     document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
     document.getElementById('page-seller').classList.add('active');
     document.querySelector('.pill[onclick*="seller"]').classList.add('active');
-    document.getElementById('s-fub-id').value = sellerId;
+    document.getElementById('s-fub-lookup').value = sellerId;
     await lookupFUB('seller');
     setFormReadOnly('seller', true);
   }
